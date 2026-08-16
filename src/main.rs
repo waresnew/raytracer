@@ -1,6 +1,9 @@
+use std::time::Instant;
+
 use clap::Parser;
 use glam::{Vec2, Vec3};
 use image::DynamicImage;
+use log::info;
 use raytracer::{
     camera::Camera, hittable::sphere::Sphere, renderer::Renderer, viewport::Viewport, world::World,
 };
@@ -10,6 +13,7 @@ use crate::cli::Cli;
 
 mod cli;
 fn main() {
+    let start = Instant::now();
     let cli = Cli::parse().compute_defaults();
     env_logger::Builder::new()
         .filter_level(cli.verbosity.log_level_filter())
@@ -45,4 +49,5 @@ fn main() {
         )
         .unwrap();
     }
+    info!("Took {:.1}s", start.elapsed().as_millis() as f32 / 1000.0);
 }
