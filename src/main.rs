@@ -1,7 +1,9 @@
 use clap::Parser;
 use glam::{Vec2, Vec3};
 use image::DynamicImage;
-use raytracer::{camera::Camera, renderer::Renderer, viewport::Viewport};
+use raytracer::{
+    camera::Camera, hittable::sphere::Sphere, renderer::Renderer, viewport::Viewport, world::World,
+};
 use viuer::Config;
 
 use crate::cli::Cli;
@@ -25,12 +27,12 @@ fn main() {
         viewport,
         focal_length: 1.0,
     };
-    let renderer = Renderer {
-        camera,
-        height,
-        width,
-    };
-    let img = renderer.render_to_image();
+    let renderer = Renderer::new(camera, height, width);
+    let world = World::from_objects(vec![
+        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
+        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+    ]);
+    let img = renderer.render_world(&world);
     if let Some(output_file) = cli.output {
         img.save(output_file).unwrap();
     } else {
@@ -38,7 +40,6 @@ fn main() {
             &DynamicImage::ImageRgb8(img),
             &Config {
                 absolute_offset: false,
-                height: Some((viuer::terminal_size().1 - 4) as u32),
                 ..Default::default()
             },
         )
