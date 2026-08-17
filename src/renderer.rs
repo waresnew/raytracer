@@ -1,5 +1,6 @@
 use glam::Vec2;
 use image::RgbImage;
+use indicatif::ProgressBar;
 
 use crate::{camera::Camera, ray::Ray, rgb::Rgb, world::World};
 
@@ -16,7 +17,7 @@ impl Renderer {
             width,
         }
     }
-    pub fn render_world(&self, world: &World) -> RgbImage {
+    pub fn render_world(&self, world: &World, progress_bar: &ProgressBar) -> RgbImage {
         let mut image = RgbImage::new(self.width, self.height);
         for y in 0..self.height {
             for x in 0..self.width {
@@ -27,6 +28,7 @@ impl Renderer {
                         .into_raw(),
                 )
             }
+            progress_bar.inc(1);
         }
         image
     }
