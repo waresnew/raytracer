@@ -13,6 +13,9 @@ impl Ray {
         if !dir.is_normalized() {
             panic!("dir was not normalized: {dir}");
         }
+        if dir.is_nan() {
+            panic!("dir had nan components: {dir}");
+        }
         Self {
             point,
             dir,
