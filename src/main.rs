@@ -7,10 +7,9 @@ use log::info;
 use raytracer::{
     camera::Camera,
     hittable::sphere::Sphere,
-    material::{Material, diffuse::Diffuse, glass::Glass, metal::Metal},
+    material::{diffuse::Diffuse, glass::Glass, metal::Metal},
     renderer::Renderer,
     rgb::Rgb,
-    viewport::Viewport,
     world::World,
 };
 use viuer::Config;
@@ -40,17 +39,13 @@ fn main() {
     );
     multi.add(progress_bar.clone());
 
-    const VIEWPORT_HEIGHT: f32 = 2.0;
-    let aspect_ratio = width as f32 / height as f32;
-    let viewport = Viewport::from_centre(
-        Vec2::new(0.0, 0.0),
-        Vec2::new(VIEWPORT_HEIGHT * aspect_ratio, VIEWPORT_HEIGHT),
+    const VERTICAL_FOV: f32 = 90.0;
+    let camera = Camera::new(
+        Vec3::new(0.0, 1.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec2::new(width as f32, height as f32),
+        VERTICAL_FOV,
     );
-    let camera = Camera {
-        centre: Vec3::ZERO,
-        viewport,
-        focal_length: 1.0,
-    };
     let renderer = Renderer::new(camera, height, width);
     let world = World::from_objects(vec![
         Box::new(Sphere::new(

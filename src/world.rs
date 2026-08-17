@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 use crate::{
     hittable::{HitResult, Hittable},
     ray::Ray,

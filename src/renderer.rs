@@ -57,9 +57,9 @@ impl Renderer {
         });
         let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {
-            let world_point = self.screen_to_viewport(sample_point);
-            let ray_dir = world_point.extend(-self.camera.focal_length) - self.camera.centre;
-            let ray = Ray::new(self.camera.centre, ray_dir.normalize(), Rgb::WHITE);
+            let world_point = self.camera.screen_to_viewport(sample_point);
+            let ray_dir = world_point - self.camera.centre();
+            let ray = Ray::new(self.camera.centre(), ray_dir.normalize(), Rgb::WHITE);
 
             let ray_colour = self.ray_cast(ray, world, MAX_RAYTRACE_DEPTH);
             sum_colour += ray_colour;
@@ -68,12 +68,6 @@ impl Renderer {
         sum_colour / AA_SAMPLES as f32
     }
 
-    fn screen_to_viewport(&self, screen: Vec2) -> Vec2 {
-        let viewport = self.camera.viewport;
-        let dx = viewport.dims().x / self.width as f32;
-        let dy = -viewport.dims().y / self.height as f32;
-        Vec2::new(viewport.min.x, viewport.max.y) + screen * Vec2::new(dx, dy)
-    }
     fn ray_cast(&self, ray: Ray, world: &World, depth: u32) -> Rgb {
         if depth == 0 {
             return Rgb::BLACK;

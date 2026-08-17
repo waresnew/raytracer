@@ -1,4 +1,4 @@
-use crate::{hittable::HitResult, ray::Ray, rgb::Rgb};
+use crate::{hittable::HitResult, ray::Ray};
 
 pub mod diffuse;
 pub mod glass;
