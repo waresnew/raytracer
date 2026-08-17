@@ -1,16 +1,23 @@
 use glam::Vec3;
 
+use crate::rgb::Rgb;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub point: Vec3,
     pub dir: Vec3,
+    pub attenuation: Rgb,
 }
 impl Ray {
-    pub fn new(point: Vec3, dir: Vec3) -> Self {
+    pub fn new(point: Vec3, dir: Vec3, attenuation: Rgb) -> Self {
         if !dir.is_normalized() {
             panic!("dir was not normalized: {dir}");
         }
-        Self { point, dir }
+        Self {
+            point,
+            dir,
+            attenuation,
+        }
     }
     pub fn at(&self, t: f32) -> Vec3 {
         self.point + t * self.dir

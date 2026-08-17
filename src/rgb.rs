@@ -3,7 +3,7 @@ use std::ops::{Add, AddAssign, Div, Mul};
 use glam::Vec3;
 
 #[derive(Debug, Clone, Copy)]
-/// f32 for precision
+/// f32 for precision; [0,1]
 pub struct Rgb {
     pub r: f32,
     pub g: f32,
@@ -14,6 +14,11 @@ impl Rgb {
         r: 0.0,
         g: 0.0,
         b: 0.0,
+    };
+    pub const WHITE: Rgb = Rgb {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
     };
     pub fn from_vec3(vec3: Vec3) -> Self {
         Self {
@@ -26,7 +31,11 @@ impl Rgb {
         Self { r, g, b }
     }
     pub fn into_raw(self) -> image::Rgb<u8> {
-        image::Rgb([self.r as u8, self.g as u8, self.b as u8])
+        image::Rgb([
+            (self.r * 255.0) as u8,
+            (self.g * 255.0) as u8,
+            (self.b * 255.0) as u8,
+        ])
     }
 }
 impl Add for Rgb {
@@ -64,6 +73,17 @@ impl Mul<f32> for Rgb {
             r: self.r * rhs,
             g: self.g * rhs,
             b: self.b * rhs,
+        }
+    }
+}
+impl Mul for Rgb {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Rgb {
+            r: self.r * rhs.r,
+            g: self.g * rhs.g,
+            b: self.b * rhs.b,
         }
     }
 }

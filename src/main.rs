@@ -5,7 +5,13 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use log::info;
 use raytracer::{
-    camera::Camera, hittable::sphere::Sphere, renderer::Renderer, viewport::Viewport, world::World,
+    camera::Camera,
+    hittable::sphere::Sphere,
+    material::{Material, diffuse::Diffuse},
+    renderer::Renderer,
+    rgb::Rgb,
+    viewport::Viewport,
+    world::World,
 };
 use viuer::Config;
 
@@ -47,8 +53,16 @@ fn main() {
     };
     let renderer = Renderer::new(camera, height, width);
     let world = World::from_objects(vec![
-        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
-        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, -100.5, -1.0),
+            100.0,
+            Diffuse::new(Rgb::new(0.5, 0.5, 0.5)),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, 0.0, -1.0),
+            0.5,
+            Diffuse::new(Rgb::new(0.5, 0.0, 0.5)),
+        )),
     ]);
     let img = renderer.render_world(&world, &progress_bar);
 

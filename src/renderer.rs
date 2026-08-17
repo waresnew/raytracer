@@ -24,9 +24,9 @@ impl Renderer {
             if x < 0.0 { 0.0 } else { x.sqrt() }
         }
         Rgb {
-            r: sqrt_or_zero(rgb.r / 255.0) * 255.0,
-            g: sqrt_or_zero(rgb.g / 255.0) * 255.0,
-            b: sqrt_or_zero(rgb.b / 255.0) * 255.0,
+            r: sqrt_or_zero(rgb.r),
+            g: sqrt_or_zero(rgb.g),
+            b: sqrt_or_zero(rgb.b),
         }
     }
     pub fn render_world(&self, world: &World, progress_bar: &ProgressBar) -> RgbImage {
@@ -59,11 +59,12 @@ impl Renderer {
         for sample_point in sample_points {
             let world_point = self.screen_to_viewport(sample_point);
             let ray_dir = world_point.extend(-self.camera.focal_length) - self.camera.centre;
-            let ray = Ray::new(self.camera.centre, ray_dir.normalize());
+            let ray = Ray::new(self.camera.centre, ray_dir.normalize(), Rgb::WHITE);
 
-            let ray_colour = self.ray_colour(ray, world, MAX_RAYTRACE_DEPTH);
+            let ray_colour = self.ray_cast(ray, world, MAX_RAYTRACE_DEPTH);
             sum_colour += ray_colour;
         }
+
         sum_colour / AA_SAMPLES as f32
     }
 
@@ -73,15 +74,15 @@ impl Renderer {
         let dy = -viewport.dims().y / self.height as f32;
         Vec2::new(viewport.min.x, viewport.max.y) + screen * Vec2::new(dx, dy)
     }
-    fn ray_colour(&self, ray: Ray, world: &World, depth: u32) -> Rgb {
+    fn ray_cast(&self, ray: Ray, world: &World, depth: u32) -> Rgb {
         if depth == 0 {
             return Rgb::BLACK;
         }
         if let Some(hit_result) = world.ray_hit(ray) {
-            let reflected = hit_result.object.reflect_ray(&hit_result);
-            self.ray_colour(reflected, world, depth - 1) * 0.5
+            let reflected = hit_result.object.material().scatter_ray(&hit_result);
+            self.ray_cast(reflected, world, depth - 1)
         } else {
-            self.ray_sky_colour(ray)
+            ray.attenuation * self.ray_sky_colour(ray)
         }
     }
     fn ray_sky_colour(&self, ray: Ray) -> Rgb {
@@ -89,6 +90,6 @@ impl Renderer {
         fn lerp(start: f32, end: f32, t: f32) -> f32 {
             (1.0 - t) * start + t * end
         }
-        Rgb::new(lerp(255.0, 144.0, t), lerp(255.0, 213.0, t), 255.0)
+        Rgb::new(lerp(1.0, 0.5, t), lerp(1.0, 0.7, t), 1.0)
     }
 }

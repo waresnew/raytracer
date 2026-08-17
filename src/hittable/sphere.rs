@@ -3,19 +3,32 @@ use std::ops::Range;
 use glam::Vec3;
 
 use crate::{
-    ext::Vec3Ext,
     hittable::{HitResult, Hittable},
+    material::Material,
     ray::Ray,
 };
 
-#[derive(Debug, Clone, Copy)]
 pub struct Sphere {
     pub centre: Vec3,
     pub radius: f32,
+    pub material: Box<dyn Material>,
 }
 impl Sphere {
-    pub fn new(centre: Vec3, radius: f32) -> Self {
-        Self { centre, radius }
+    pub fn new<M: Material + 'static>(centre: Vec3, radius: f32, material: M) -> Self {
+        Self {
+            centre,
+            radius,
+            material: Box::new(material),
+        }
+    }
+}
+impl Clone for Sphere {
+    fn clone(&self) -> Self {
+        Self {
+            centre: self.centre,
+            radius: self.radius,
+            material: (*self.material).clone_mat(),
+        }
     }
 }
 impl Hittable for Sphere {
@@ -38,7 +51,8 @@ impl Hittable for Sphere {
         Some(HitResult {
             point: ray.at(t),
             normal,
-            object: Box::new(*self),
+            object: Box::new(self.clone()),
+            ray,
             t,
         })
     }
@@ -47,8 +61,7 @@ impl Hittable for Sphere {
         self.centre
     }
 
-    fn reflect_ray(&self, hit_result: &HitResult) -> Ray {
-        let dir = (Vec3::rand_unit() + hit_result.normal).normalize(); // lambertian diffuse
-        Ray::new(hit_result.point, dir)
+    fn material(&self) -> Box<dyn Material> {
+        self.material.clone_mat()
     }
 }
