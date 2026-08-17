@@ -4,6 +4,7 @@ use indicatif::ProgressBar;
 
 use crate::{camera::Camera, ray::Ray, rgb::Rgb, world::World};
 
+//TODO: most consts used here should be cli args instead
 pub struct Renderer {
     pub camera: Camera,
     pub height: u32,
@@ -17,6 +18,17 @@ impl Renderer {
             width,
         }
     }
+    fn linear_to_srgb(rgb: Rgb) -> Rgb {
+        //approximation
+        fn sqrt_or_zero(x: f32) -> f32 {
+            if x < 0.0 { 0.0 } else { x.sqrt() }
+        }
+        Rgb {
+            r: sqrt_or_zero(rgb.r / 255.0) * 255.0,
+            g: sqrt_or_zero(rgb.g / 255.0) * 255.0,
+            b: sqrt_or_zero(rgb.b / 255.0) * 255.0,
+        }
+    }
     pub fn render_world(&self, world: &World, progress_bar: &ProgressBar) -> RgbImage {
         let mut image = RgbImage::new(self.width, self.height);
         for y in 0..self.height {
@@ -24,8 +36,10 @@ impl Renderer {
                 image.put_pixel(
                     x,
                     y,
-                    self.calc_pixel_colour(Vec2::new(x as f32, y as f32), world)
-                        .into_raw(),
+                    Self::linear_to_srgb(
+                        self.calc_pixel_colour(Vec2::new(x as f32, y as f32), world),
+                    )
+                    .into_raw(),
                 )
             }
             progress_bar.inc(1);
@@ -34,19 +48,20 @@ impl Renderer {
     }
     fn calc_pixel_colour(&self, point: Vec2, world: &World) -> Rgb {
         const AA_SAMPLES: usize = 100;
+        const MAX_RAYTRACE_DEPTH: u32 = 50;
         let sample_points: [Vec2; AA_SAMPLES] = std::array::from_fn(|_| {
             Vec2::new(
                 rand::random_range(point.x - 0.5..=point.x + 0.5),
                 rand::random_range(point.y - 0.5..=point.y + 0.5),
             )
         });
-        let mut sum_colour = Rgb::ZERO;
+        let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {
             let world_point = self.screen_to_viewport(sample_point);
             let ray_dir = world_point.extend(-self.camera.focal_length) - self.camera.centre;
             let ray = Ray::new(self.camera.centre, ray_dir.normalize());
 
-            let ray_colour = self.ray_colour(ray, world);
+            let ray_colour = self.ray_colour(ray, world, MAX_RAYTRACE_DEPTH);
             sum_colour += ray_colour;
         }
         sum_colour / AA_SAMPLES as f32
@@ -58,9 +73,13 @@ impl Renderer {
         let dy = -viewport.dims().y / self.height as f32;
         Vec2::new(viewport.min.x, viewport.max.y) + screen * Vec2::new(dx, dy)
     }
-    fn ray_colour(&self, ray: Ray, world: &World) -> Rgb {
+    fn ray_colour(&self, ray: Ray, world: &World, depth: u32) -> Rgb {
+        if depth == 0 {
+            return Rgb::BLACK;
+        }
         if let Some(hit_result) = world.ray_hit(ray) {
-            Rgb::from_vec3((hit_result.normal + 1.0) / 2.0 * 255.0)
+            let reflected = hit_result.object.reflect_ray(&hit_result);
+            self.ray_colour(reflected, world, depth - 1) * 0.5
         } else {
             self.ray_sky_colour(ray)
         }

@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{
     hittable::{HitResult, Hittable},
     ray::Ray,
@@ -12,14 +14,13 @@ impl World {
     }
     pub fn ray_hit(&self, ray: Ray) -> Option<HitResult> {
         let mut ans = None;
-        let mut ans_dis = f32::MAX;
+        let mut ans_t = f32::MAX;
         for object in &self.objects {
-            if let Some(hit_result) = object.ray_hit(ray) {
-                let dis = hit_result.point.distance_squared(ray.point);
-                if dis < ans_dis {
-                    ans_dis = dis;
-                    ans = Some(hit_result);
-                }
+            if let Some(hit_result) = object.ray_hit(ray, 0.001..f32::INFINITY) // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
+                && hit_result.t < ans_t
+            {
+                ans_t = hit_result.t;
+                ans = Some(hit_result);
             }
         }
         ans

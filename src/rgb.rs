@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div};
+use std::ops::{Add, AddAssign, Div, Mul};
 
 use glam::Vec3;
 
@@ -10,7 +10,7 @@ pub struct Rgb {
     pub b: f32,
 }
 impl Rgb {
-    pub const ZERO: Rgb = Rgb {
+    pub const BLACK: Rgb = Rgb {
         r: 0.0,
         g: 0.0,
         b: 0.0,
@@ -53,6 +53,17 @@ impl Div<f32> for Rgb {
             r: self.r / rhs,
             g: self.g / rhs,
             b: self.b / rhs,
+        }
+    }
+}
+impl Mul<f32> for Rgb {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Rgb {
+            r: self.r * rhs,
+            g: self.g * rhs,
+            b: self.b * rhs,
         }
     }
 }

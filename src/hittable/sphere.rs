@@ -1,10 +1,14 @@
+use std::ops::Range;
+
 use glam::Vec3;
 
 use crate::{
+    ext::Vec3Ext,
     hittable::{HitResult, Hittable},
     ray::Ray,
 };
 
+#[derive(Debug, Clone, Copy)]
 pub struct Sphere {
     pub centre: Vec3,
     pub radius: f32,
@@ -15,7 +19,7 @@ impl Sphere {
     }
 }
 impl Hittable for Sphere {
-    fn ray_hit(&self, ray: Ray) -> Option<HitResult> {
+    fn ray_hit(&self, ray: Ray, t_bounds: Range<f32>) -> Option<HitResult> {
         let a = ray.dir.dot(ray.dir);
         let b = 2.0 * ray.dir.dot(ray.point - self.centre);
         let c = self.centre.dot(self.centre) - 2.0 * self.centre.dot(ray.point)
@@ -26,7 +30,7 @@ impl Hittable for Sphere {
             return None;
         }
         let t = (-b - discrim.sqrt()) / (2.0 * a);
-        if t < 0.0 {
+        if !t_bounds.contains(&t) {
             return None;
         }
         let hit_point = ray.at(t);
@@ -34,10 +38,17 @@ impl Hittable for Sphere {
         Some(HitResult {
             point: ray.at(t),
             normal,
+            object: Box::new(*self),
+            t,
         })
     }
 
     fn centre(&self) -> Vec3 {
         self.centre
+    }
+
+    fn reflect_ray(&self, hit_result: &HitResult) -> Ray {
+        let dir = (Vec3::rand_unit() + hit_result.normal).normalize(); // lambertian diffuse
+        Ray::new(hit_result.point, dir)
     }
 }
