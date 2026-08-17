@@ -5,11 +5,24 @@ pub struct Camera {
     centre: Vec3,
     viewport_dims: Vec2,
     image_dims: Vec2,
+
+    /// this determines focus distance for now
     look_at_centre: Vec3,
+
     basis: (Vec3, Vec3, Vec3),
+    lens_radius: f32,
 }
 impl Camera {
-    pub fn new(centre: Vec3, look_at_centre: Vec3, image_dims: Vec2, vertical_fov: f32) -> Self {
+    pub fn new(
+        centre: Vec3,
+        look_at_centre: Vec3,
+        image_dims: Vec2,
+        vertical_fov: f32,
+        lens_radius: f32,
+    ) -> Self {
+        if lens_radius < 0.0 {
+            panic!("lens_radius was negative: {}", lens_radius);
+        }
         let global_up = Vec3::new(0.0, 1.0, 0.0);
         let z = (centre - look_at_centre).normalize();
         let x = global_up.cross(z).normalize();
@@ -25,6 +38,7 @@ impl Camera {
             look_at_centre,
             image_dims,
             basis: (x, y, z),
+            lens_radius,
         }
     }
     pub fn screen_to_viewport(&self, screen: Vec2) -> Vec3 {
@@ -39,7 +53,9 @@ impl Camera {
     pub fn focal_length(&self) -> f32 {
         (self.look_at_centre - self.centre).length()
     }
-    pub fn centre(&self) -> Vec3 {
-        self.centre
+    pub fn rand_lens_point(&self) -> Vec3 {
+        let rand_x = rand::random_range(-self.lens_radius..=self.lens_radius);
+        let rand_y = rand::random_range(-self.lens_radius..=self.lens_radius);
+        rand_x * self.basis.0 + rand_y * self.basis.1 + self.centre
     }
 }

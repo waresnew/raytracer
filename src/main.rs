@@ -40,11 +40,13 @@ fn main() {
     multi.add(progress_bar.clone());
 
     const VERTICAL_FOV: f32 = 90.0;
+    const LENS_RADIUS: f32 = 0.1;
     let camera = Camera::new(
         Vec3::new(0.0, 1.0, 1.0),
         Vec3::new(0.0, 0.0, -1.0),
         Vec2::new(width as f32, height as f32),
         VERTICAL_FOV,
+        LENS_RADIUS,
     );
     let renderer = Renderer::new(camera, height, width);
     let world = World::from_objects(vec![

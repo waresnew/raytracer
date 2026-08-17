@@ -58,8 +58,9 @@ impl Renderer {
         let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {
             let world_point = self.camera.screen_to_viewport(sample_point);
-            let ray_dir = world_point - self.camera.centre();
-            let ray = Ray::new(self.camera.centre(), ray_dir.normalize(), Rgb::WHITE);
+            let lens_point = self.camera.rand_lens_point();
+            let ray_dir = world_point - lens_point;
+            let ray = Ray::new(lens_point, ray_dir.normalize(), Rgb::WHITE);
 
             let ray_colour = self.ray_cast(ray, world, MAX_RAYTRACE_DEPTH);
             sum_colour += ray_colour;
