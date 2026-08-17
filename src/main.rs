@@ -7,7 +7,7 @@ use log::info;
 use raytracer::{
     camera::Camera,
     hittable::sphere::Sphere,
-    material::{Material, diffuse::Diffuse},
+    material::{Material, diffuse::Diffuse, metal::Metal},
     renderer::Renderer,
     rgb::Rgb,
     viewport::Viewport,
@@ -59,9 +59,14 @@ fn main() {
             Diffuse::new(Rgb::new(0.5, 0.5, 0.5)),
         )),
         Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -1.0),
+            Vec3::new(0.75, 0.0, -1.0),
             0.5,
             Diffuse::new(Rgb::new(0.5, 0.0, 0.5)),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(-0.75, 0.0, -1.0),
+            0.5,
+            Metal::new(Rgb::new(0.7, 0.5, 0.0), 0.3),
         )),
     ]);
     let img = renderer.render_world(&world, &progress_bar);
