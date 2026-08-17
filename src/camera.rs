@@ -1,5 +1,7 @@
 use glam::{Vec2, Vec3};
 
+use crate::ext::Vec2Ext;
+
 /// +x is right, +y is up, +z is out of screen
 pub struct Camera {
     centre: Vec3,
@@ -54,8 +56,9 @@ impl Camera {
         (self.look_at_centre - self.centre).length()
     }
     pub fn rand_lens_point(&self) -> Vec3 {
-        let rand_x = rand::random_range(-self.lens_radius..=self.lens_radius);
-        let rand_y = rand::random_range(-self.lens_radius..=self.lens_radius);
-        rand_x * self.basis.0 + rand_y * self.basis.1 + self.centre
+        let rand_unit = Vec2::rand_unit();
+        self.lens_radius * rand_unit.y * self.basis.0
+            + self.lens_radius * rand_unit.y * self.basis.1
+            + self.centre
     }
 }
