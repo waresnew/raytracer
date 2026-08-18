@@ -3,16 +3,16 @@ use std::ops::Range;
 use glam::Vec3;
 
 use crate::{
-    bvh::aabb::Aabb,
+    aabb::Aabb,
     hittable::{HitResult, Hittable},
     material::Material,
     ray::Ray,
 };
 
 pub struct Sphere {
-    pub centre: Vec3,
-    pub radius: f32,
-    pub material: Box<dyn Material>,
+    centre: Vec3,
+    radius: f32,
+    material: Box<dyn Material>,
 }
 impl Sphere {
     pub fn new<M: Material + 'static>(centre: Vec3, radius: f32, material: M) -> Self {
@@ -48,18 +48,20 @@ impl Hittable for Sphere {
             return None;
         }
         let hit_point = ray.at(t);
-        let normal = (hit_point - self.centre()).normalize();
+        let mut normal = (hit_point - self.centre).normalize();
+        let mut back_face = false;
+        if ray.dir.dot(normal) > 0.0 {
+            normal = -normal;
+            back_face = true;
+        }
         Some(HitResult {
             point: ray.at(t),
             normal,
             object: Box::new(self.clone()),
             ray,
             t,
+            back_face,
         })
-    }
-
-    fn centre(&self) -> Vec3 {
-        self.centre
     }
 
     fn material(&self) -> Box<dyn Material> {

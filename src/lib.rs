@@ -1,3 +1,4 @@
+pub mod aabb;
 pub mod bvh;
 pub mod camera;
 pub mod ext;

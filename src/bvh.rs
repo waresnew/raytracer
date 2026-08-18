@@ -1,12 +1,11 @@
 use std::ops::Range;
 
 use crate::{
-    bvh::aabb::Aabb,
+    aabb::Aabb,
     hittable::{HitResult, Hittable},
     ray::Ray,
 };
 
-pub mod aabb;
 pub enum BvhNode {
     Branch(BvhBranch),
     Leaf(Box<dyn Hittable>),
@@ -51,7 +50,7 @@ impl BvhNode {
     pub fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
         match self {
             BvhNode::Branch(branch) => {
-                if !ray.intersects_aabb(branch.aabb, t_bounds) {
+                if !branch.aabb.ray_intersects(ray, t_bounds) {
                     return None;
                 }
                 let left = branch.left.ray_hit(ray, t_bounds);
