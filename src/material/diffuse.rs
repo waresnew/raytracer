@@ -4,11 +4,11 @@ use crate::{ext::Vec3Ext, hittable::HitResult, material::Material, ray::Ray, rgb
 
 #[derive(Debug, Clone, Copy)]
 pub struct Diffuse {
-    albedo: Rgb,
+    colour: Rgb,
 }
 impl Diffuse {
-    pub fn new(albedo: Rgb) -> Self {
-        Self { albedo }
+    pub fn new(colour: Rgb) -> Self {
+        Self { colour }
     }
 }
 impl Material for Diffuse {
@@ -18,7 +18,7 @@ impl Material for Diffuse {
         Ray::new(
             hit_result.point,
             dir,
-            self.albedo * hit_result.ray.attenuation,
+            self.colour * hit_result.ray.attenuation,
         )
     }
 
