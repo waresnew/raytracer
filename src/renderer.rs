@@ -7,21 +7,24 @@ use indicatif::ProgressBar;
 use crate::{bvh::BvhNode, camera::Camera, ray::Ray, rgb::Rgb};
 
 pub struct Renderer {
-    pub camera: Camera,
     pub height: u32,
     pub width: u32,
+    pub config: RenderConfig,
+    pub camera: Camera,
 }
 #[derive(Debug, Clone, Copy)]
 pub struct RenderConfig {
     pub aa_samples: usize,
     pub max_depth: u32,
+    pub sky_colour: Rgb,
 }
 impl Renderer {
-    pub fn new(camera: Camera, height: u32, width: u32) -> Self {
+    pub fn new(height: u32, width: u32, camera: Camera, config: RenderConfig) -> Self {
         Self {
-            camera,
             height,
             width,
+            config,
+            camera,
         }
     }
     fn linear_to_srgb(rgb: Rgb) -> Rgb {
@@ -35,23 +38,16 @@ impl Renderer {
             b: sqrt_or_zero(rgb.b),
         }
     }
-    pub fn render(
-        &self,
-        bvh: &BvhNode,
-        progress_bar: &ProgressBar,
-        render_config: RenderConfig,
-    ) -> RgbImage {
+    pub fn render(&self, bvh: &BvhNode, progress_bar: &ProgressBar) -> RgbImage {
         let mut image = RgbImage::new(self.width, self.height);
         for y in 0..self.height {
             for x in 0..self.width {
                 image.put_pixel(
                     x,
                     y,
-                    Self::linear_to_srgb(self.calc_pixel_colour(
-                        Vec2::new(x as f32, y as f32),
-                        bvh,
-                        render_config,
-                    ))
+                    Self::linear_to_srgb(
+                        self.calc_pixel_colour(Vec2::new(x as f32, y as f32), bvh),
+                    )
                     .into_raw(),
                 )
             }
@@ -59,14 +55,14 @@ impl Renderer {
         }
         image
     }
-    fn calc_pixel_colour(&self, point: Vec2, bvh: &BvhNode, render_config: RenderConfig) -> Rgb {
+    fn calc_pixel_colour(&self, point: Vec2, bvh: &BvhNode) -> Rgb {
         let sample_points: Vec<Vec2> = iter::repeat_with(|| {
             Vec2::new(
                 rand::random_range(point.x - 0.5..=point.x + 0.5),
                 rand::random_range(point.y - 0.5..=point.y + 0.5),
             )
         })
-        .take(render_config.aa_samples)
+        .take(self.config.aa_samples)
         .collect();
         let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {
@@ -75,11 +71,11 @@ impl Renderer {
             let ray_dir = world_point - lens_point;
             let ray = Ray::new(lens_point, ray_dir.normalize(), Rgb::WHITE);
 
-            let ray_colour = self.ray_cast(ray, bvh, render_config.max_depth);
+            let ray_colour = self.ray_cast(ray, bvh, self.config.max_depth);
             sum_colour += ray_colour;
         }
 
-        sum_colour / render_config.aa_samples as f32
+        sum_colour / self.config.aa_samples as f32
     }
 
     fn ray_cast(&self, ray: Ray, bvh: &BvhNode, depth: u32) -> Rgb {
@@ -94,7 +90,7 @@ impl Renderer {
                 ray.attenuation * hit_result.object.material().emit_light()
             }
         } else {
-            Rgb::BLACK
+            ray.attenuation * self.config.sky_colour
         }
     }
 }

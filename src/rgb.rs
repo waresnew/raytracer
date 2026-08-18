@@ -50,6 +50,12 @@ impl Rgb {
             b: self.b / mx,
         }
     }
+    pub fn random() -> Self {
+        let r = rand::random_range(0.0..1.0);
+        let g = rand::random_range(0.0..1.0);
+        let b = rand::random_range(0.0..1.0);
+        Self::new(r, g, b)
+    }
 }
 impl Add for Rgb {
     type Output = Self;

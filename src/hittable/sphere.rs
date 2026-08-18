@@ -15,11 +15,11 @@ pub struct Sphere {
     material: Box<dyn Material>,
 }
 impl Sphere {
-    pub fn new<M: Material + 'static>(centre: Vec3, radius: f32, material: M) -> Self {
+    pub fn new(centre: Vec3, radius: f32, material: Box<dyn Material>) -> Self {
         Self {
             centre,
             radius,
-            material: Box::new(material),
+            material,
         }
     }
 }

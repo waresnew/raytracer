@@ -26,12 +26,12 @@ impl Clone for Parallelogram {
     }
 }
 impl Parallelogram {
-    pub fn new<M: Material + 'static>(start: Vec3, side1: Vec3, side2: Vec3, material: M) -> Self {
+    pub fn new(start: Vec3, side1: Vec3, side2: Vec3, material: Box<dyn Material>) -> Self {
         Self {
             start,
             side1,
             side2,
-            material: Box::new(material),
+            material,
         }
     }
     fn plane_normal(&self) -> Vec3 {
