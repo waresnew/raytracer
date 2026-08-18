@@ -20,7 +20,7 @@ pub enum SceneType {
     MixedLight,
 }
 pub struct Scene {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Hittable>,
     pub render_config: RenderConfig,
     pub camera_config: CameraConfig,
 }

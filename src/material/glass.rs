@@ -1,4 +1,4 @@
-use crate::{hittable::HitResult, material::Material, ray::Ray};
+use crate::{hittable::HitResult, ray::Ray};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Glass {
@@ -8,9 +8,7 @@ impl Glass {
     pub fn new(refraction_index: f32) -> Self {
         Self { refraction_index }
     }
-}
-impl Material for Glass {
-    fn scatter_ray(&self, hit_result: &HitResult) -> Option<Ray> {
+    pub fn scatter_ray(&self, hit_result: HitResult) -> Option<Ray> {
         //snell's law
         let n = hit_result.normal;
         let incident = hit_result.ray.dir;
@@ -43,9 +41,5 @@ impl Material for Glass {
             ray_dir,
             hit_result.ray.attenuation,
         ))
-    }
-
-    fn clone_mat(&self) -> Box<dyn Material> {
-        Box::new(*self)
     }
 }

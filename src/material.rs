@@ -1,13 +1,13 @@
-use crate::{hittable::HitResult, ray::Ray, rgb::Rgb};
+use crate::material::{diffuse::Diffuse, diffuse_light::DiffuseLight, glass::Glass, metal::Metal};
 
 pub mod diffuse;
 pub mod diffuse_light;
 pub mod glass;
 pub mod metal;
-pub trait Material {
-    fn scatter_ray(&self, hit_result: &HitResult) -> Option<Ray>;
-    fn clone_mat(&self) -> Box<dyn Material>;
-    fn emit_light(&self) -> Rgb {
-        Rgb::BLACK
-    }
+#[derive(Clone, Copy)]
+pub enum Material {
+    Diffuse(Diffuse),
+    Metal(Metal),
+    Glass(Glass),
+    DiffuseLight(DiffuseLight),
 }

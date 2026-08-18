@@ -8,7 +8,7 @@ use crate::{
 
 pub enum BvhNode {
     Branch(BvhBranch),
-    Leaf(Box<dyn Hittable>),
+    Leaf(Hittable),
     Empty,
 }
 pub struct BvhBranch {
@@ -26,7 +26,7 @@ impl BvhBranch {
     }
 }
 impl BvhNode {
-    pub fn from_objects(mut objects: Vec<Box<dyn Hittable>>) -> Self {
+    pub fn from_objects(mut objects: Vec<Hittable>) -> Self {
         if objects.is_empty() {
             return BvhNode::Empty;
         }
@@ -35,10 +35,13 @@ impl BvhNode {
         }
         let mut aabb = Aabb::empty_box();
         for object in &objects {
-            aabb = Aabb::combine(aabb, object.aabb());
+            aabb = Aabb::combine(aabb, Self::hittable_aabb(object));
         }
         let split_axis = aabb.max_range_axis();
-        objects.sort_by(|a, b| a.aabb().min[split_axis].total_cmp(&b.aabb().min[split_axis]));
+        objects.sort_by(|a, b| {
+            Self::hittable_aabb(a).min[split_axis]
+                .total_cmp(&Self::hittable_aabb(b).min[split_axis])
+        });
         let right = objects.split_off(objects.len() / 2);
         let left = objects;
         BvhNode::Branch(BvhBranch::new(
@@ -73,8 +76,20 @@ impl BvhNode {
                     }
                 }
             }
-            BvhNode::Leaf(hittable) => hittable.ray_hit(ray, t_bounds),
+            BvhNode::Leaf(hittable) => Self::hittable_ray_hit(hittable, ray, t_bounds),
             BvhNode::Empty => None,
+        }
+    }
+    fn hittable_aabb(hittable: &Hittable) -> Aabb {
+        match hittable {
+            Hittable::Sphere(sphere) => sphere.aabb(),
+            Hittable::Parallelogram(parallelogram) => parallelogram.aabb(),
+        }
+    }
+    fn hittable_ray_hit(hittable: &Hittable, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
+        match hittable {
+            Hittable::Sphere(sphere) => sphere.ray_hit(ray, t_bounds),
+            Hittable::Parallelogram(parallelogram) => parallelogram.ray_hit(ray, t_bounds),
         }
     }
 }

@@ -2,31 +2,17 @@ use std::ops::Range;
 
 use glam::Vec3;
 
-use crate::{
-    aabb::Aabb,
-    hittable::{HitResult, Hittable},
-    material::Material,
-    ray::Ray,
-};
+use crate::{aabb::Aabb, hittable::HitResult, material::Material, ray::Ray};
 
+#[derive(Clone, Copy)]
 pub struct Parallelogram {
     start: Vec3,
     side1: Vec3,
     side2: Vec3,
-    material: Box<dyn Material>,
-}
-impl Clone for Parallelogram {
-    fn clone(&self) -> Self {
-        Self {
-            start: self.start,
-            side1: self.side1,
-            side2: self.side2,
-            material: (*self.material).clone_mat(),
-        }
-    }
+    material: Material,
 }
 impl Parallelogram {
-    pub fn new(start: Vec3, side1: Vec3, side2: Vec3, material: Box<dyn Material>) -> Self {
+    pub fn new(start: Vec3, side1: Vec3, side2: Vec3, material: Material) -> Self {
         Self {
             start,
             side1,
@@ -37,9 +23,7 @@ impl Parallelogram {
     fn plane_normal(&self) -> Vec3 {
         self.side1.cross(self.side2).normalize()
     }
-}
-impl Hittable for Parallelogram {
-    fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
+    pub fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
         let n = self.plane_normal();
         let denom = n.dot(ray.dir);
         if denom.abs() < f32::EPSILON {
@@ -60,7 +44,7 @@ impl Hittable for Parallelogram {
             Some(HitResult {
                 point: ray.at(t),
                 normal: if ray.dir.dot(n) > 0.0 { -n } else { n },
-                object: Box::new(self.clone()),
+                material: self.material,
                 t,
                 ray,
                 back_face: false,
@@ -70,11 +54,7 @@ impl Hittable for Parallelogram {
         }
     }
 
-    fn material(&self) -> Box<dyn Material> {
-        self.material.clone_mat()
-    }
-
-    fn aabb(&self) -> Aabb {
+    pub fn aabb(&self) -> Aabb {
         const THICKNESS_PADDING: f32 = 0.0001;
         let point1 = self.start;
         let point2 = self.start + self.side1;

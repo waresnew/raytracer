@@ -3,7 +3,7 @@ use glam::Vec3;
 use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
-    material::{diffuse::Diffuse, diffuse_light::DiffuseLight},
+    material::{Material, diffuse::Diffuse, diffuse_light::DiffuseLight},
     renderer::RenderConfig,
     rgb::Rgb,
     scenes::Scene,
@@ -12,53 +12,53 @@ use crate::{
 pub fn load_cornell_box() -> Scene {
     const LIGHT_STRENGTH: f32 = 4.0;
     // 100x100x100 volume
-    let left_wall = Box::new(Parallelogram::new(
+    let left_wall = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-50.0, 0.0, 0.0),
         Vec3::new(0.0, 100.0, 0.0),
         Vec3::new(0.0, 0.0, -100.0),
-        Box::new(Diffuse::new(Rgb::new(1.0, 0.0, 0.0))),
+        Material::Diffuse(Diffuse::new(Rgb::new(1.0, 0.0, 0.0))),
     ));
-    let right_wall = Box::new(Parallelogram::new(
+    let right_wall = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(50.0, 0.0, 0.0),
         Vec3::new(0.0, 100.0, 0.0),
         Vec3::new(0.0, 0.0, -100.0),
-        Box::new(Diffuse::new(Rgb::new(0.0, 1.0, 0.0))),
+        Material::Diffuse(Diffuse::new(Rgb::new(0.0, 1.0, 0.0))),
     ));
-    let floor = Box::new(Parallelogram::new(
+    let floor = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-50.0, 0.0, 0.0),
         Vec3::new(100.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -100.0),
-        Box::new(Diffuse::new(Rgb::WHITE)),
+        Material::Diffuse(Diffuse::new(Rgb::WHITE)),
     ));
-    let ceiling = Box::new(Parallelogram::new(
+    let ceiling = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-50.0, 100.0, 0.0),
         Vec3::new(100.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -100.0),
-        Box::new(Diffuse::new(Rgb::WHITE)),
+        Material::Diffuse(Diffuse::new(Rgb::WHITE)),
     ));
-    let front_wall = Box::new(Parallelogram::new(
+    let front_wall = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-50.0, 0.0, -100.0),
         Vec3::new(100.0, 0.0, 0.0),
         Vec3::new(0.0, 100.0, 0.0),
-        Box::new(Diffuse::new(Rgb::WHITE)),
+        Material::Diffuse(Diffuse::new(Rgb::WHITE)),
     ));
-    let behind_wall = Box::new(Parallelogram::new(
+    let behind_wall = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-50.0, 0.0, 0.0),
         Vec3::new(100.0, 0.0, 0.0),
         Vec3::new(0.0, 100.0, 0.0),
-        Box::new(Diffuse::new(Rgb::WHITE)),
+        Material::Diffuse(Diffuse::new(Rgb::WHITE)),
     ));
-    let light_source = Box::new(Parallelogram::new(
+    let light_source = Hittable::Parallelogram(Parallelogram::new(
         Vec3::new(-25.0, 99.9, -35.0),
         Vec3::new(50.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -30.0),
-        Box::new(DiffuseLight::new(Rgb::new(
+        Material::DiffuseLight(DiffuseLight::new(Rgb::new(
             LIGHT_STRENGTH,
             LIGHT_STRENGTH,
             LIGHT_STRENGTH,
         ))),
     ));
-    let objects: Vec<Box<dyn Hittable>> = vec![
+    let objects: Vec<Hittable> = vec![
         left_wall,
         right_wall,
         floor,
