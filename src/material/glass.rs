@@ -10,7 +10,7 @@ impl Glass {
     }
 }
 impl Material for Glass {
-    fn scatter_ray(&self, hit_result: &HitResult) -> Ray {
+    fn scatter_ray(&self, hit_result: &HitResult) -> Option<Ray> {
         //snell's law
         let n = hit_result.normal;
         let incident = hit_result.ray.dir;
@@ -38,7 +38,11 @@ impl Material for Glass {
             let refract_par = (1.0 - refract_perp.length_squared()).max(0.0).sqrt() * -n;
             (refract_perp + refract_par).normalize_or(incident)
         };
-        Ray::new(hit_result.point, ray_dir, hit_result.ray.attenuation)
+        Some(Ray::new(
+            hit_result.point,
+            ray_dir,
+            hit_result.ray.attenuation,
+        ))
     }
 
     fn clone_mat(&self) -> Box<dyn Material> {

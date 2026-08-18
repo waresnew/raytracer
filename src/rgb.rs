@@ -2,8 +2,8 @@ use std::ops::{Add, AddAssign, Div, Mul};
 
 use glam::Vec3;
 
-#[derive(Debug, Clone, Copy)]
-/// f32 for precision; [0,1]
+#[derive(Debug, Clone, Copy, PartialEq)]
+/// f32 for precision; [0,1] normally but can be higher for light sources
 pub struct Rgb {
     pub r: f32,
     pub g: f32,
@@ -31,11 +31,24 @@ impl Rgb {
         Self { r, g, b }
     }
     pub fn into_raw(self) -> image::Rgb<u8> {
+        let rgb = if self.r.max(self.g).max(self.b) > 1.0 {
+            self.normalize()
+        } else {
+            self
+        };
         image::Rgb([
-            (self.r * 255.0) as u8,
-            (self.g * 255.0) as u8,
-            (self.b * 255.0) as u8,
+            (rgb.r * 255.0) as u8,
+            (rgb.g * 255.0) as u8,
+            (rgb.b * 255.0) as u8,
         ])
+    }
+    fn normalize(&self) -> Self {
+        let mx = self.r.max(self.g).max(self.b);
+        Self {
+            r: self.r / mx,
+            g: self.g / mx,
+            b: self.b / mx,
+        }
     }
 }
 impl Add for Rgb {

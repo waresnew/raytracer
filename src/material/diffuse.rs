@@ -12,14 +12,14 @@ impl Diffuse {
     }
 }
 impl Material for Diffuse {
-    fn scatter_ray(&self, hit_result: &HitResult) -> Ray {
+    fn scatter_ray(&self, hit_result: &HitResult) -> Option<Ray> {
         let dir = (Vec3::rand_unit() + hit_result.normal).normalize_or(hit_result.normal); // lambertian diffuse
 
-        Ray::new(
+        Some(Ray::new(
             hit_result.point,
             dir,
             self.colour * hit_result.ray.attenuation,
-        )
+        ))
     }
 
     fn clone_mat(&self) -> Box<dyn Material> {

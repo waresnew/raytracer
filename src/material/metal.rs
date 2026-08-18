@@ -16,14 +16,14 @@ impl Metal {
     }
 }
 impl Material for Metal {
-    fn scatter_ray(&self, hit_result: &HitResult) -> Ray {
+    fn scatter_ray(&self, hit_result: &HitResult) -> Option<Ray> {
         let reflected = hit_result.ray.dir.reflect(hit_result.normal);
         let dir = (reflected + Vec3::rand_unit() * self.reflect_fuzz).normalize_or(reflected);
-        Ray::new(
+        Some(Ray::new(
             hit_result.point,
             dir,
             self.colour * hit_result.ray.attenuation,
-        )
+        ))
     }
 
     fn clone_mat(&self) -> Box<dyn Material> {

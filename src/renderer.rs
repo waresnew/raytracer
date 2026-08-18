@@ -88,17 +88,13 @@ impl Renderer {
         }
         // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
         if let Some(hit_result) = bvh.ray_hit(ray, &(0.001..f32::INFINITY)) {
-            let reflected = hit_result.object.material().scatter_ray(&hit_result);
-            self.ray_cast(reflected, bvh, depth - 1)
+            if let Some(reflected) = hit_result.object.material().scatter_ray(&hit_result) {
+                self.ray_cast(reflected, bvh, depth - 1)
+            } else {
+                ray.attenuation * hit_result.object.material().emit_light()
+            }
         } else {
-            ray.attenuation * self.ray_sky_colour(ray)
+            Rgb::BLACK
         }
-    }
-    fn ray_sky_colour(&self, ray: Ray) -> Rgb {
-        let t = (ray.dir.y + 1.0) / 2.0;
-        fn lerp(start: f32, end: f32, t: f32) -> f32 {
-            (1.0 - t) * start + t * end
-        }
-        Rgb::new(lerp(1.0, 0.5, t), lerp(1.0, 0.7, t), 1.0)
     }
 }

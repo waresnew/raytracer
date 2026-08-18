@@ -8,7 +8,7 @@ use raytracer::{
     bvh::BvhNode,
     camera::Camera,
     hittable::{parallelogram::Parallelogram, sphere::Sphere},
-    material::{diffuse::Diffuse, glass::Glass, metal::Metal},
+    material::{diffuse::Diffuse, diffuse_light::DiffuseLight, glass::Glass, metal::Metal},
     renderer::{RenderConfig, Renderer},
     rgb::Rgb,
 };
@@ -75,7 +75,7 @@ fn main() {
             Vec3::new(-10.0, 0.0, -10.0),
             Vec3::new(0.0, 10.0, 0.0),
             Vec3::new(20.0, 0.0, 0.0),
-            Diffuse::new(Rgb::new(1.0, 0.5, 0.5)),
+            DiffuseLight::new(Rgb::new(5.0, 0.5, 0.5)),
         )),
     ]);
     let img = renderer.render(
