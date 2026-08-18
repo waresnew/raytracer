@@ -19,6 +19,14 @@ pub struct Cli {
     #[arg(short, long)]
     pub output: Option<String>,
 
+    /// Number of ray samples to take per pixel for anti-aliasing.
+    #[arg(long, default_value_t = 100)]
+    pub aa_samples: usize,
+
+    /// Maximum recursion depth of raycasts.
+    #[arg(long, default_value_t = 50)]
+    pub max_depth: u32,
+
     #[command(flatten)]
     pub verbosity: Verbosity<WarnLevel>,
 

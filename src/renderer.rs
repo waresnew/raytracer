@@ -1,14 +1,20 @@
+use std::iter;
+
 use glam::Vec2;
 use image::RgbImage;
 use indicatif::ProgressBar;
 
 use crate::{camera::Camera, ray::Ray, rgb::Rgb, world::World};
 
-//TODO: most consts used here should be cli args instead
 pub struct Renderer {
     pub camera: Camera,
     pub height: u32,
     pub width: u32,
+}
+#[derive(Debug, Clone, Copy)]
+pub struct RenderConfig {
+    pub aa_samples: usize,
+    pub max_depth: u32,
 }
 impl Renderer {
     pub fn new(camera: Camera, height: u32, width: u32) -> Self {
@@ -29,16 +35,23 @@ impl Renderer {
             b: sqrt_or_zero(rgb.b),
         }
     }
-    pub fn render_world(&self, world: &World, progress_bar: &ProgressBar) -> RgbImage {
+    pub fn render_world(
+        &self,
+        world: &World,
+        progress_bar: &ProgressBar,
+        render_config: RenderConfig,
+    ) -> RgbImage {
         let mut image = RgbImage::new(self.width, self.height);
         for y in 0..self.height {
             for x in 0..self.width {
                 image.put_pixel(
                     x,
                     y,
-                    Self::linear_to_srgb(
-                        self.calc_pixel_colour(Vec2::new(x as f32, y as f32), world),
-                    )
+                    Self::linear_to_srgb(self.calc_pixel_colour(
+                        Vec2::new(x as f32, y as f32),
+                        world,
+                        render_config,
+                    ))
                     .into_raw(),
                 )
             }
@@ -46,15 +59,15 @@ impl Renderer {
         }
         image
     }
-    fn calc_pixel_colour(&self, point: Vec2, world: &World) -> Rgb {
-        const AA_SAMPLES: usize = 100;
-        const MAX_RAYTRACE_DEPTH: u32 = 50;
-        let sample_points: [Vec2; AA_SAMPLES] = std::array::from_fn(|_| {
+    fn calc_pixel_colour(&self, point: Vec2, world: &World, render_config: RenderConfig) -> Rgb {
+        let sample_points: Vec<Vec2> = iter::repeat_with(|| {
             Vec2::new(
                 rand::random_range(point.x - 0.5..=point.x + 0.5),
                 rand::random_range(point.y - 0.5..=point.y + 0.5),
             )
-        });
+        })
+        .take(render_config.aa_samples)
+        .collect();
         let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {
             let world_point = self.camera.screen_to_viewport(sample_point);
@@ -62,11 +75,11 @@ impl Renderer {
             let ray_dir = world_point - lens_point;
             let ray = Ray::new(lens_point, ray_dir.normalize(), Rgb::WHITE);
 
-            let ray_colour = self.ray_cast(ray, world, MAX_RAYTRACE_DEPTH);
+            let ray_colour = self.ray_cast(ray, world, render_config.max_depth);
             sum_colour += ray_colour;
         }
 
-        sum_colour / AA_SAMPLES as f32
+        sum_colour / render_config.aa_samples as f32
     }
 
     fn ray_cast(&self, ray: Ray, world: &World, depth: u32) -> Rgb {

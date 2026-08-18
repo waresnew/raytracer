@@ -8,7 +8,7 @@ use raytracer::{
     camera::Camera,
     hittable::sphere::Sphere,
     material::{diffuse::Diffuse, glass::Glass, metal::Metal},
-    renderer::Renderer,
+    renderer::{RenderConfig, Renderer},
     rgb::Rgb,
     world::World,
 };
@@ -71,7 +71,14 @@ fn main() {
             Metal::new(Rgb::new(0.2, 0.2, 1.0), 0.3),
         )),
     ]);
-    let img = renderer.render_world(&world, &progress_bar);
+    let img = renderer.render_world(
+        &world,
+        &progress_bar,
+        RenderConfig {
+            aa_samples: cli.aa_samples,
+            max_depth: cli.max_depth,
+        },
+    );
 
     progress_bar.finish_and_clear();
     if let Some(output_file) = cli.output {
