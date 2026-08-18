@@ -2,13 +2,14 @@ use std::ops::Range;
 
 use glam::Vec3;
 
-use crate::{material::Material, ray::Ray};
+use crate::{bvh::aabb::Aabb, material::Material, ray::Ray};
 
 pub mod sphere;
 pub trait Hittable {
-    fn ray_hit(&self, ray: Ray, t_bounds: Range<f32>) -> Option<HitResult>;
+    fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult>;
     fn centre(&self) -> Vec3;
     fn material(&self) -> Box<dyn Material>;
+    fn aabb(&self) -> Aabb;
 }
 pub struct HitResult {
     pub point: Vec3,

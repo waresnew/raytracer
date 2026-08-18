@@ -1,3 +1,4 @@
+pub mod bvh;
 pub mod camera;
 pub mod ext;
 pub mod hittable;
@@ -5,4 +6,3 @@ pub mod material;
 pub mod ray;
 pub mod renderer;
 pub mod rgb;
-pub mod world;

@@ -5,12 +5,12 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use log::info;
 use raytracer::{
+    bvh::BvhNode,
     camera::Camera,
     hittable::sphere::Sphere,
     material::{diffuse::Diffuse, glass::Glass, metal::Metal},
     renderer::{RenderConfig, Renderer},
     rgb::Rgb,
-    world::World,
 };
 use viuer::Config;
 
@@ -49,7 +49,7 @@ fn main() {
         LENS_RADIUS,
     );
     let renderer = Renderer::new(camera, height, width);
-    let world = World::from_objects(vec![
+    let bvh = BvhNode::from_objects(vec![
         Box::new(Sphere::new(
             Vec3::new(0.0, -100.5, -1.0),
             100.0,
@@ -71,8 +71,8 @@ fn main() {
             Metal::new(Rgb::new(0.2, 0.2, 1.0), 0.3),
         )),
     ]);
-    let img = renderer.render_world(
-        &world,
+    let img = renderer.render(
+        &bvh,
         &progress_bar,
         RenderConfig {
             aa_samples: cli.aa_samples,

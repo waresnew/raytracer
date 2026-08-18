@@ -4,7 +4,7 @@ use glam::Vec2;
 use image::RgbImage;
 use indicatif::ProgressBar;
 
-use crate::{camera::Camera, ray::Ray, rgb::Rgb, world::World};
+use crate::{bvh::BvhNode, camera::Camera, ray::Ray, rgb::Rgb};
 
 pub struct Renderer {
     pub camera: Camera,
@@ -35,9 +35,9 @@ impl Renderer {
             b: sqrt_or_zero(rgb.b),
         }
     }
-    pub fn render_world(
+    pub fn render(
         &self,
-        world: &World,
+        bvh: &BvhNode,
         progress_bar: &ProgressBar,
         render_config: RenderConfig,
     ) -> RgbImage {
@@ -49,7 +49,7 @@ impl Renderer {
                     y,
                     Self::linear_to_srgb(self.calc_pixel_colour(
                         Vec2::new(x as f32, y as f32),
-                        world,
+                        bvh,
                         render_config,
                     ))
                     .into_raw(),
@@ -59,7 +59,7 @@ impl Renderer {
         }
         image
     }
-    fn calc_pixel_colour(&self, point: Vec2, world: &World, render_config: RenderConfig) -> Rgb {
+    fn calc_pixel_colour(&self, point: Vec2, bvh: &BvhNode, render_config: RenderConfig) -> Rgb {
         let sample_points: Vec<Vec2> = iter::repeat_with(|| {
             Vec2::new(
                 rand::random_range(point.x - 0.5..=point.x + 0.5),
@@ -75,20 +75,21 @@ impl Renderer {
             let ray_dir = world_point - lens_point;
             let ray = Ray::new(lens_point, ray_dir.normalize(), Rgb::WHITE);
 
-            let ray_colour = self.ray_cast(ray, world, render_config.max_depth);
+            let ray_colour = self.ray_cast(ray, bvh, render_config.max_depth);
             sum_colour += ray_colour;
         }
 
         sum_colour / render_config.aa_samples as f32
     }
 
-    fn ray_cast(&self, ray: Ray, world: &World, depth: u32) -> Rgb {
+    fn ray_cast(&self, ray: Ray, bvh: &BvhNode, depth: u32) -> Rgb {
         if depth == 0 {
             return Rgb::BLACK;
         }
-        if let Some(hit_result) = world.ray_hit(ray) {
+        // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
+        if let Some(hit_result) = bvh.ray_hit(ray, &(0.001..f32::INFINITY)) {
             let reflected = hit_result.object.material().scatter_ray(&hit_result);
-            self.ray_cast(reflected, world, depth - 1)
+            self.ray_cast(reflected, bvh, depth - 1)
         } else {
             ray.attenuation * self.ray_sky_colour(ray)
         }

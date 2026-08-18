@@ -3,6 +3,7 @@ use std::ops::Range;
 use glam::Vec3;
 
 use crate::{
+    bvh::aabb::Aabb,
     hittable::{HitResult, Hittable},
     material::Material,
     ray::Ray,
@@ -32,7 +33,7 @@ impl Clone for Sphere {
     }
 }
 impl Hittable for Sphere {
-    fn ray_hit(&self, ray: Ray, t_bounds: Range<f32>) -> Option<HitResult> {
+    fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
         let a = ray.dir.dot(ray.dir);
         let b = 2.0 * ray.dir.dot(ray.point - self.centre);
         let c = self.centre.dot(self.centre) - 2.0 * self.centre.dot(ray.point)
@@ -63,5 +64,11 @@ impl Hittable for Sphere {
 
     fn material(&self) -> Box<dyn Material> {
         self.material.clone_mat()
+    }
+    fn aabb(&self) -> Aabb {
+        Aabb::new(
+            self.centre - Vec3::splat(self.radius),
+            self.centre + Vec3::splat(self.radius),
+        )
     }
 }
