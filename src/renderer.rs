@@ -9,25 +9,20 @@ use crate::{
 };
 
 pub struct Renderer {
-    pub height: u32,
-    pub width: u32,
     pub config: RenderConfig,
     pub camera: Camera,
 }
 #[derive(Debug, Clone, Copy)]
 pub struct RenderConfig {
+    pub image_height: u32,
+    pub image_width: u32,
     pub aa_samples: usize,
     pub max_depth: u32,
     pub sky_colour: Rgb,
 }
 impl Renderer {
-    pub fn new(height: u32, width: u32, camera: Camera, config: RenderConfig) -> Self {
-        Self {
-            height,
-            width,
-            config,
-            camera,
-        }
+    pub fn new(camera: Camera, config: RenderConfig) -> Self {
+        Self { config, camera }
     }
     fn linear_to_srgb(rgb: Rgb) -> Rgb {
         //approximation
@@ -41,9 +36,9 @@ impl Renderer {
         }
     }
     pub fn render(&self, bvh: &BvhNode, progress_bar: &ProgressBar) -> RgbImage {
-        let mut image = RgbImage::new(self.width, self.height);
-        for y in 0..self.height {
-            for x in 0..self.width {
+        let mut image = RgbImage::new(self.config.image_width, self.config.image_height);
+        for y in 0..self.config.image_height {
+            for x in 0..self.config.image_width {
                 image.put_pixel(
                     x,
                     y,

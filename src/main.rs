@@ -24,22 +24,26 @@ fn setup_logging(cli: &Cli, multi: &MultiProgress) {
     log::set_max_level(level); //workaround from indicatif-log-bridge
 }
 fn main() {
-    let cli = Cli::parse().compute_defaults();
-    let height = cli.height.unwrap();
-    let width = cli.width.unwrap();
+    let cli = Cli::parse().post_process();
     let multi = MultiProgress::new();
     setup_logging(&cli, &multi);
-    let progress_bar = ProgressBar::new(height as u64).with_style(
+
+    let scene = scenes::load_scene(cli.scene);
+    let progress_bar = ProgressBar::new(scene.render_config.image_height as u64).with_style(
         ProgressStyle::with_template(
             "\t[{elapsed_precise}] {wide_bar:.green/red} {pos:>7}/{len:7} ETA: {eta}\t",
         )
         .unwrap(),
     );
     multi.add(progress_bar.clone());
-
-    let scene = scenes::load_scene(cli.scene);
-    let camera = Camera::new(Vec2::new(width as f32, height as f32), scene.camera_config);
-    let renderer = Renderer::new(height, width, camera, scene.render_config);
+    let camera = Camera::new(
+        Vec2::new(
+            scene.render_config.image_width as f32,
+            scene.render_config.image_height as f32,
+        ),
+        scene.camera_config,
+    );
+    let renderer = Renderer::new(camera, scene.render_config);
     let bvh = BvhNode::from_objects(scene.objects);
     let img = renderer.render(&bvh, &progress_bar);
 

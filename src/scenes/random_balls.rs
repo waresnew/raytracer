@@ -60,6 +60,8 @@ pub fn load_random_balls() -> Scene {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::new(0.53, 0.81, 0.92),
+            image_width: 800,
+            image_height: 450,
         },
         camera_config: CameraConfig {
             centre: Vec3::new(13.0, 2.0, 3.0),

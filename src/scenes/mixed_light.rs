@@ -40,6 +40,8 @@ pub fn load_mixed_light() -> Scene {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::BLACK,
+            image_width: 800,
+            image_height: 450,
         },
         camera_config: CameraConfig {
             centre: Vec3::new(0.0, 5.0, 0.1),

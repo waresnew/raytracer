@@ -3,7 +3,6 @@ use crate::{
     hittable::{Hittable, parallelogram::Parallelogram},
     material::Material,
     renderer::RenderConfig,
-    rgb::Rgb,
     scenes::{
         cornell_box::load_cornell_box, mixed_light::load_mixed_light,
         random_balls::load_random_balls,

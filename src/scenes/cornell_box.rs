@@ -82,6 +82,8 @@ pub fn load_cornell_box() -> Scene {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::BLACK,
+            image_width: 800,
+            image_height: 800,
         },
         camera_config: CameraConfig {
             centre: Vec3::new(0.0, 50.0, 137.4), // 50/tan(40/2)
