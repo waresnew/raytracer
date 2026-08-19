@@ -24,6 +24,9 @@ impl BvhBranch {
             aabb,
         }
     }
+    pub fn aabb(&self) -> Aabb {
+        self.aabb
+    }
 }
 impl BvhNode {
     pub fn from_objects(mut objects: Vec<Hittable>) -> Self {
@@ -54,12 +57,7 @@ impl BvhNode {
                     return None;
                 }
                 let left = branch.left.ray_hit(ray, t_bounds);
-                let right_t_bounds = if let Some(left) = &left {
-                    &(t_bounds.start..left.t)
-                } else {
-                    t_bounds
-                };
-                let right = branch.right.ray_hit(ray, right_t_bounds);
+                let right = branch.right.ray_hit(ray, t_bounds);
                 match (&left, &right) {
                     (None, None) => None,
                     (Some(_), None) => left,

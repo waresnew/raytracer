@@ -5,6 +5,7 @@ use glam::{Vec2, Vec3};
 use image::RgbImage;
 
 use crate::{
+    aabb::Aabb,
     bvh::BvhNode,
     camera::{Camera, CameraConfig},
     hittable::Hittable,
@@ -16,6 +17,7 @@ use crate::{
 #[derive(ShaderType, Default)]
 pub struct BvhNodeGpu {
     tag: u32,
+    aabb: AabbGpu,
 
     //leaf
     hittable: HittableGpu,
@@ -47,6 +49,7 @@ impl From<&BvhNode> for Vec<BvhNodeGpu> {
                     ans.push(BvhNodeGpu {
                         tag: cur.into(),
                         right_index: 0,
+                        aabb: bvh_branch.aabb().into(),
                         ..Default::default()
                     });
                     dfs_bvh(&bvh_branch.left, ans);
@@ -259,4 +262,17 @@ impl From<RgbImageGpu> for RgbImage {
 #[derive(ShaderType)]
 pub struct GpuWorkState {
     pub start_row: u32,
+}
+#[derive(ShaderType, Default)]
+pub struct AabbGpu {
+    pub min: Vec3,
+    pub max: Vec3,
+}
+impl From<Aabb> for AabbGpu {
+    fn from(value: Aabb) -> Self {
+        Self {
+            min: value.min,
+            max: value.max,
+        }
+    }
 }

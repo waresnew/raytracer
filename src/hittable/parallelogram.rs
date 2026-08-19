@@ -29,15 +29,15 @@ impl Parallelogram {
         if denom.abs() < f32::EPSILON {
             return None; // no/inf intersection
         }
-        let t = (-n.dot(ray.point) + n.dot(self.start)) / denom;
+        let t = -n.dot(ray.point) + n.dot(self.start) / denom;
         let point = ray.at(t);
         fn point_in_parallelogram(point: Vec3, region: &Parallelogram) -> bool {
             // to check if the point is in the face's bounds, represent the point using side1 and
             // side2 as basis vectors. the basis does not (should not) need to be orthogonal and normalized.
             let d = point - region.start;
             let n = region.plane_normal();
-            let s = (n.dot(region.side2.cross(d))) / (n.dot(region.side2.cross(region.side1)));
-            let t = (n.dot(region.side1.cross(d))) / (n.dot(region.side1.cross(region.side2)));
+            let s = n.dot(region.side2.cross(d)) / n.dot(region.side2.cross(region.side1));
+            let t = n.dot(region.side1.cross(d)) / n.dot(region.side1.cross(region.side2));
             (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t)
         }
         if t_bounds.contains(&t) && point_in_parallelogram(point, self) {

@@ -27,7 +27,7 @@ impl Glass {
             r0 + (1.0 - r0) * (1.0 - cos_theta).powi(5)
         }
         let ray_dir = if sin_theta_refracted > 1.0
-            || rand::random::<f32>() < reflect_chance(n1, n2, cos_theta)
+            || rand::random_range(0.0..1.0) < reflect_chance(n1, n2, cos_theta)
         {
             // total internal reflection
             incident.reflect(hit_result.normal)
