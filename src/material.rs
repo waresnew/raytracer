@@ -39,3 +39,13 @@ impl Scatter for Material {
         }
     }
 }
+impl From<Material> for u32 {
+    fn from(value: Material) -> Self {
+        match value {
+            Material::Diffuse(_) => 0,
+            Material::Metal(_) => 1,
+            Material::Glass(_) => 2,
+            Material::DiffuseLight(_) => 3,
+        }
+    }
+}

@@ -4,7 +4,7 @@ use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
     material::{diffuse::Diffuse, diffuse_light::DiffuseLight},
-    raytracer::RaytracerConfig,
+    raytracer::RaytraceConfig,
     rgb::Rgb,
     scenes::{Scene, make_box},
 };
@@ -80,7 +80,7 @@ pub fn load_cornell_box() -> Scene {
     objects.extend(cube_box);
     Scene {
         objects,
-        render_config: RaytracerConfig {
+        raytrace_config: RaytraceConfig {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::BLACK,

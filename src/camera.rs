@@ -5,10 +5,10 @@ use crate::ext::Vec2Ext;
 /// +x is right, +y is up, +z is out of screen
 #[derive(Debug, Clone, Copy)]
 pub struct Camera {
-    image_dims: Vec2,
-    viewport_dims: Vec2,
-    config: CameraConfig,
-    basis: (Vec3, Vec3, Vec3),
+    pub image_dims: Vec2,
+    pub viewport_dims: Vec2,
+    pub config: CameraConfig,
+    pub basis: (Vec3, Vec3, Vec3),
 }
 #[derive(Debug, Clone, Copy)]
 pub struct CameraConfig {

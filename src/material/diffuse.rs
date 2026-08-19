@@ -4,7 +4,7 @@ use crate::{ext::Vec3Ext, hittable::HitResult, ray::Ray, rgb::Rgb};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Diffuse {
-    colour: Rgb,
+    pub colour: Rgb,
 }
 impl Diffuse {
     pub fn new(colour: Rgb) -> Self {

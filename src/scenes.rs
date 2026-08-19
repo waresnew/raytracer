@@ -2,7 +2,7 @@ use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
     material::Material,
-    raytracer::RaytracerConfig,
+    raytracer::RaytraceConfig,
     scenes::{
         cornell_box::load_cornell_box, mixed_light::load_mixed_light,
         random_balls::load_random_balls,
@@ -21,9 +21,10 @@ pub enum SceneType {
     RandomBalls,
     MixedLight,
 }
+#[derive(Clone)]
 pub struct Scene {
     pub objects: Vec<Hittable>,
-    pub render_config: RaytracerConfig,
+    pub raytrace_config: RaytraceConfig,
     pub camera_config: CameraConfig,
 }
 

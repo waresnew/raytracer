@@ -6,9 +6,9 @@ use crate::{aabb::Aabb, hittable::HitResult, material::Material, ray::Ray};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Sphere {
-    centre: Vec3,
-    radius: f32,
-    material: Material,
+    pub centre: Vec3,
+    pub radius: f32,
+    pub material: Material,
 }
 impl Sphere {
     pub fn new(centre: Vec3, radius: f32, material: Material) -> Self {

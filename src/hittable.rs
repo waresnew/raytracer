@@ -47,3 +47,11 @@ pub struct HitResult {
     pub ray: Ray,
     pub back_face: bool,
 }
+impl From<Hittable> for u32 {
+    fn from(value: Hittable) -> Self {
+        match value {
+            Hittable::Sphere(_) => 0,
+            Hittable::Parallelogram(_) => 1,
+        }
+    }
+}

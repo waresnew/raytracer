@@ -2,7 +2,7 @@ use crate::{hittable::HitResult, ray::Ray};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Glass {
-    refraction_index: f32, // vacuum:medium ratio
+    pub refraction_index: f32, // vacuum:medium ratio
 }
 impl Glass {
     pub fn new(refraction_index: f32) -> Self {

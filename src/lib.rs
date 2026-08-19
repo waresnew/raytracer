@@ -2,6 +2,7 @@ mod aabb;
 mod bvh;
 mod camera;
 mod ext;
+mod gpu;
 mod hittable;
 mod macros;
 mod material;

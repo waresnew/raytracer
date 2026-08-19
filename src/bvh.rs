@@ -7,13 +7,13 @@ use crate::{
 };
 
 pub enum BvhNode {
-    Branch(BvhBranch),
-    Leaf(Hittable),
     Empty,
+    Leaf(Hittable),
+    Branch(BvhBranch),
 }
 pub struct BvhBranch {
-    left: Box<BvhNode>,
-    right: Box<BvhNode>,
+    pub left: Box<BvhNode>,
+    pub right: Box<BvhNode>,
     aabb: Aabb,
 }
 impl BvhBranch {
@@ -75,6 +75,15 @@ impl BvhNode {
             }
             BvhNode::Leaf(hittable) => hittable.ray_hit(ray, t_bounds),
             BvhNode::Empty => None,
+        }
+    }
+}
+impl From<&BvhNode> for u32 {
+    fn from(value: &BvhNode) -> Self {
+        match value {
+            BvhNode::Empty => 0,
+            BvhNode::Leaf(_) => 1,
+            BvhNode::Branch(_) => 2,
         }
     }
 }

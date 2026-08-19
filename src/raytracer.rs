@@ -7,15 +7,15 @@ use indicatif::ProgressBar;
 use crate::{bvh::BvhNode, camera::Camera, material::Scatter, ray::Ray, rgb::Rgb, scenes::Scene};
 
 pub struct Raytracer {
-    config: RaytracerConfig,
+    config: RaytraceConfig,
     camera: Camera,
     bvh: BvhNode,
 }
 #[derive(Debug, Clone, Copy)]
-pub struct RaytracerConfig {
+pub struct RaytraceConfig {
     pub image_height: u32,
     pub image_width: u32,
-    pub aa_samples: usize,
+    pub aa_samples: u32,
     pub max_depth: u32,
     pub sky_colour: Rgb,
 }
@@ -23,15 +23,15 @@ impl Raytracer {
     pub fn new(scene: Scene) -> Self {
         let camera = Camera::new(
             Vec2::new(
-                scene.render_config.image_width as f32,
-                scene.render_config.image_height as f32,
+                scene.raytrace_config.image_width as f32,
+                scene.raytrace_config.image_height as f32,
             ),
             scene.camera_config,
         );
         let bvh = BvhNode::from_objects(scene.objects);
         Self {
             camera,
-            config: scene.render_config,
+            config: scene.raytrace_config,
             bvh,
         }
     }
@@ -68,7 +68,7 @@ impl Raytracer {
                 rand::random_range(point.y - 0.5..=point.y + 0.5),
             )
         })
-        .take(self.config.aa_samples)
+        .take(self.config.aa_samples as usize)
         .collect();
         let mut sum_colour = Rgb::BLACK;
         for sample_point in sample_points {

@@ -15,7 +15,7 @@ mod cli;
 fn main() {
     let cli = Cli::parse().post_process();
     let scene = scenes::load_scene(cli.scene);
-    let (multi, progress_bar) = setup_progress_bar(scene.render_config.image_height as u64);
+    let (multi, progress_bar) = setup_progress_bar(scene.raytrace_config.image_height as u64);
     setup_logging(&cli, &multi);
 
     let raytracer = Raytracer::new(scene);

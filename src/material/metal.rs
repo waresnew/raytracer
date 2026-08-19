@@ -4,8 +4,8 @@ use crate::{ext::Vec3Ext, hittable::HitResult, ray::Ray, rgb::Rgb};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Metal {
-    colour: Rgb,
-    reflect_fuzz: f32,
+    pub colour: Rgb,
+    pub reflect_fuzz: f32,
 }
 impl Metal {
     pub fn new(colour: Rgb, reflect_fuzz: f32) -> Self {

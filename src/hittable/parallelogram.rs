@@ -6,10 +6,10 @@ use crate::{aabb::Aabb, hittable::HitResult, material::Material, ray::Ray};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Parallelogram {
-    start: Vec3,
-    side1: Vec3,
-    side2: Vec3,
-    material: Material,
+    pub start: Vec3,
+    pub side1: Vec3,
+    pub side2: Vec3,
+    pub material: Material,
 }
 impl Parallelogram {
     pub fn new(start: Vec3, side1: Vec3, side2: Vec3, material: Material) -> Self {
