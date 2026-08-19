@@ -4,9 +4,7 @@ use glam::Vec2;
 use image::RgbImage;
 use indicatif::ProgressBar;
 
-use crate::{
-    bvh::BvhNode, camera::Camera, hittable::HitResult, material::Material, ray::Ray, rgb::Rgb,
-};
+use crate::{bvh::BvhNode, camera::Camera, material::Scatter, ray::Ray, rgb::Rgb};
 
 pub struct Renderer {
     pub config: RenderConfig,
@@ -81,30 +79,13 @@ impl Renderer {
         }
         // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
         if let Some(hit_result) = bvh.ray_hit(ray, &(0.001..f32::INFINITY)) {
-            if let Some(reflected) = Self::material_scatter_ray(hit_result.material, hit_result) {
+            if let Some(reflected) = hit_result.material.scatter_ray(hit_result) {
                 self.ray_cast(reflected, bvh, depth - 1)
             } else {
-                ray.attenuation
-                    * Self::material_emit_light(hit_result.material).unwrap_or(Rgb::BLACK)
+                ray.attenuation * hit_result.material.emit_light()
             }
         } else {
             ray.attenuation * self.config.sky_colour
-        }
-    }
-    fn material_scatter_ray(material: Material, hit_result: HitResult) -> Option<Ray> {
-        match material {
-            Material::Diffuse(diffuse) => diffuse.scatter_ray(hit_result),
-            Material::Metal(metal) => metal.scatter_ray(hit_result),
-            Material::Glass(glass) => glass.scatter_ray(hit_result),
-            Material::DiffuseLight(_) => None,
-        }
-    }
-    fn material_emit_light(material: Material) -> Option<Rgb> {
-        match material {
-            Material::Diffuse(_) => None,
-            Material::Metal(_) => None,
-            Material::Glass(_) => None,
-            Material::DiffuseLight(diffuse_light) => Some(diffuse_light.emit_light()),
         }
     }
 }

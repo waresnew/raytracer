@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use crate::{
     aabb::Aabb,
-    hittable::{HitResult, Hittable},
+    hittable::{Hit, HitResult, Hittable},
     ray::Ray,
 };
 
@@ -35,13 +35,10 @@ impl BvhNode {
         }
         let mut aabb = Aabb::empty_box();
         for object in &objects {
-            aabb = Aabb::combine(aabb, Self::hittable_aabb(object));
+            aabb = Aabb::combine(aabb, object.aabb());
         }
         let split_axis = aabb.max_range_axis();
-        objects.sort_by(|a, b| {
-            Self::hittable_aabb(a).min[split_axis]
-                .total_cmp(&Self::hittable_aabb(b).min[split_axis])
-        });
+        objects.sort_by(|a, b| a.aabb().min[split_axis].total_cmp(&b.aabb().min[split_axis]));
         let right = objects.split_off(objects.len() / 2);
         let left = objects;
         BvhNode::Branch(BvhBranch::new(
@@ -76,20 +73,8 @@ impl BvhNode {
                     }
                 }
             }
-            BvhNode::Leaf(hittable) => Self::hittable_ray_hit(hittable, ray, t_bounds),
+            BvhNode::Leaf(hittable) => hittable.ray_hit(ray, t_bounds),
             BvhNode::Empty => None,
-        }
-    }
-    fn hittable_aabb(hittable: &Hittable) -> Aabb {
-        match hittable {
-            Hittable::Sphere(sphere) => sphere.aabb(),
-            Hittable::Parallelogram(parallelogram) => parallelogram.aabb(),
-        }
-    }
-    fn hittable_ray_hit(hittable: &Hittable, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult> {
-        match hittable {
-            Hittable::Sphere(sphere) => sphere.ray_hit(ray, t_bounds),
-            Hittable::Parallelogram(parallelogram) => parallelogram.ray_hit(ray, t_bounds),
         }
     }
 }
