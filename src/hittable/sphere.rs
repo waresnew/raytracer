@@ -4,7 +4,7 @@ use glam::Vec3;
 
 use crate::{aabb::Aabb, hittable::HitResult, material::Material, ray::Ray};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Sphere {
     centre: Vec3,
     radius: f32,

@@ -5,17 +5,19 @@ use glam::Vec3;
 use crate::{
     aabb::Aabb,
     hittable::{parallelogram::Parallelogram, sphere::Sphere},
+    macros::gen_struct_enum,
     material::Material,
     ray::Ray,
 };
 
 pub mod parallelogram;
 pub mod sphere;
-#[derive(Clone, Copy)]
-pub enum Hittable {
-    Sphere(Sphere),
-    Parallelogram(Parallelogram),
-}
+
+gen_struct_enum!(Hittable {
+    Sphere,
+    Parallelogram
+});
+
 pub trait Hit {
     fn ray_hit(&self, ray: Ray, t_bounds: &Range<f32>) -> Option<HitResult>;
     fn aabb(&self) -> Aabb;

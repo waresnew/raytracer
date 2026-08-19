@@ -3,6 +3,7 @@ pub mod bvh;
 pub mod camera;
 pub mod ext;
 pub mod hittable;
+pub mod macros;
 pub mod material;
 pub mod ray;
 pub mod renderer;

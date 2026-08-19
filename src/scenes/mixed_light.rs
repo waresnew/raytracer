@@ -3,7 +3,7 @@ use glam::Vec3;
 use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram, sphere::Sphere},
-    material::{Material, diffuse::Diffuse, diffuse_light::DiffuseLight},
+    material::{diffuse::Diffuse, diffuse_light::DiffuseLight},
     renderer::RenderConfig,
     rgb::Rgb,
     scenes::Scene,
@@ -11,28 +11,32 @@ use crate::{
 
 /// to show rgb mixing
 pub fn load_mixed_light() -> Scene {
-    let floor = Hittable::Parallelogram(Parallelogram::new(
+    let floor = Parallelogram::new(
         Vec3::new(-100.0, 0.0, 100.0),
         Vec3::new(200.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -200.0),
-        Material::Diffuse(Diffuse::new(Rgb::new(0.5, 0.5, 0.5))),
-    ));
+        Diffuse::new(Rgb::new(0.5, 0.5, 0.5)).into(),
+    )
+    .into();
     const LIGHT_STRENGTH: f32 = 10.0;
-    let red = Hittable::Sphere(Sphere::new(
+    let red = Sphere::new(
         Vec3::new(-1.2, 1.0, 1.0),
         1.0,
-        Material::DiffuseLight(DiffuseLight::new(Rgb::new(LIGHT_STRENGTH, 0.0, 0.0))),
-    ));
-    let green = Hittable::Sphere(Sphere::new(
+        DiffuseLight::new(Rgb::new(LIGHT_STRENGTH, 0.0, 0.0)).into(),
+    )
+    .into();
+    let green = Sphere::new(
         Vec3::new(1.2, 1.0, 1.0),
         1.0,
-        Material::DiffuseLight(DiffuseLight::new(Rgb::new(0.0, LIGHT_STRENGTH, 0.0))),
-    ));
-    let blue = Hittable::Sphere(Sphere::new(
+        DiffuseLight::new(Rgb::new(0.0, LIGHT_STRENGTH, 0.0)).into(),
+    )
+    .into();
+    let blue = Sphere::new(
         Vec3::new(0.0, 1.0, -1.2),
         1.0,
-        Material::DiffuseLight(DiffuseLight::new(Rgb::new(0.0, 0.0, LIGHT_STRENGTH))),
-    ));
+        DiffuseLight::new(Rgb::new(0.0, 0.0, LIGHT_STRENGTH)).into(),
+    )
+    .into();
     let objects: Vec<Hittable> = vec![floor, red, green, blue];
     Scene {
         objects,

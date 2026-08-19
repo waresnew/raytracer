@@ -13,22 +13,23 @@ use crate::{
 pub fn load_random_balls() -> Scene {
     let mut rng = SmallRng::seed_from_u64(1234);
     let mut objects: Vec<Hittable> = Vec::new();
-    let floor = Hittable::Parallelogram(Parallelogram::new(
+    let floor = Parallelogram::new(
         Vec3::new(-100.0, 0.0, 100.0),
         Vec3::new(200.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -200.0),
-        Material::Diffuse(Diffuse::new(Rgb::new(0.5, 0.5, 0.5))),
-    ));
+        Diffuse::new(Rgb::new(0.5, 0.5, 0.5)).into(),
+    )
+    .into();
     objects.push(floor);
     for x in -10..10 {
         for z in -10..10 {
             let material_rand = rng.random_range(0.0..1.0);
             let material: Material = if material_rand < 0.1 {
-                Material::Glass(Glass::new(1.5))
+                Glass::new(1.5).into()
             } else if material_rand < 0.4 {
-                Material::Metal(Metal::new(Rgb::random(), rng.random_range(0.0..1.0)))
+                Metal::new(Rgb::random(), rng.random_range(0.0..1.0)).into()
             } else {
-                Material::Diffuse(Diffuse::new(Rgb::random()))
+                Diffuse::new(Rgb::random()).into()
             };
             const SPACING: f32 = 0.8;
             let pos = Vec3::new(
@@ -36,24 +37,26 @@ pub fn load_random_balls() -> Scene {
                 rng.random_range(0.25..0.5),
                 z as f32 * SPACING + rng.random_range(-0.25..0.25),
             );
-            objects.push(Hittable::Sphere(Sphere::new(pos, 0.25, material)))
+            objects.push(Sphere::new(pos, 0.25, material).into())
         }
     }
-    objects.push(Hittable::Sphere(Sphere::new(
-        Vec3::new(0.0, 1.0, 0.0),
-        1.0,
-        Material::Glass(Glass::new(1.5)),
-    )));
-    objects.push(Hittable::Sphere(Sphere::new(
-        Vec3::new(4.0, 1.0, 0.0),
-        1.0,
-        Material::Metal(Metal::new(Rgb::new(0.5, 0.5, 0.5), 0.0)),
-    )));
-    objects.push(Hittable::Sphere(Sphere::new(
-        Vec3::new(-4.0, 1.0, 0.0),
-        1.0,
-        Material::Diffuse(Diffuse::new(Rgb::new(1.0, 0.3, 0.5))),
-    )));
+    objects.push(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, Glass::new(1.5).into()).into());
+    objects.push(
+        Sphere::new(
+            Vec3::new(4.0, 1.0, 0.0),
+            1.0,
+            Metal::new(Rgb::new(0.5, 0.5, 0.5), 0.0).into(),
+        )
+        .into(),
+    );
+    objects.push(
+        Sphere::new(
+            Vec3::new(-4.0, 1.0, 0.0),
+            1.0,
+            Diffuse::new(Rgb::new(1.0, 0.3, 0.5)).into(),
+        )
+        .into(),
+    );
     Scene {
         objects,
         render_config: RenderConfig {
