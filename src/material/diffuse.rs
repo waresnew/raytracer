@@ -10,13 +10,24 @@ impl Diffuse {
     pub fn new(colour: Rgb) -> Self {
         Self { colour }
     }
+
     pub fn scatter_ray(&self, hit_result: HitResult) -> Option<Ray> {
-        let dir = (Vec3::rand_unit() + hit_result.normal).normalize_or(hit_result.normal); // lambertian diffuse
+        // lambertian distribution
+        let dir = Self::cosine_weighted_vector(hit_result.normal);
 
         Some(Ray::new(
             hit_result.point,
             dir,
             self.colour * hit_result.ray.attenuation,
         ))
+    }
+    fn cosine_weighted_vector(normal: Vec3) -> Vec3 {
+        loop {
+            let rand_unit = Vec3::rand_unit();
+            let cos_theta = rand_unit.dot(normal);
+            if rand_unit.dot(normal) > 0.0 && rand::random_range(0.0..1.0) < cos_theta {
+                return rand_unit;
+            }
+        }
     }
 }
