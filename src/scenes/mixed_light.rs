@@ -4,7 +4,7 @@ use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram, sphere::Sphere},
     material::{diffuse::Diffuse, diffuse_light::DiffuseLight},
-    renderer::RenderConfig,
+    raytracer::RaytracerConfig,
     rgb::Rgb,
     scenes::Scene,
 };
@@ -40,7 +40,7 @@ pub fn load_mixed_light() -> Scene {
     let objects: Vec<Hittable> = vec![floor, red, green, blue];
     Scene {
         objects,
-        render_config: RenderConfig {
+        render_config: RaytracerConfig {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::BLACK,

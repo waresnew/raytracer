@@ -5,7 +5,7 @@ use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram, sphere::Sphere},
     material::{Material, diffuse::Diffuse, glass::Glass, metal::Metal},
-    renderer::RenderConfig,
+    raytracer::RaytracerConfig,
     rgb::Rgb,
     scenes::Scene,
 };
@@ -59,7 +59,7 @@ pub fn load_random_balls() -> Scene {
     );
     Scene {
         objects,
-        render_config: RenderConfig {
+        render_config: RaytracerConfig {
             aa_samples: 100,
             max_depth: 50,
             sky_colour: Rgb::new(0.53, 0.81, 0.92),
