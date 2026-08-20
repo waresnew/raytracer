@@ -8,8 +8,9 @@ import package::buffers::{gpu_work_state, raytrace_config, output_image};
 @workgroup_size(16,16)
 fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
     let pixel_x=global_invocation_id.x;
-    var pixel_y=global_invocation_id.y+gpu_work_state.start_row;
-    if pixel_x>=raytrace_config.image_width || pixel_y>=raytrace_config.image_height {
+    let local_pixel_y=global_invocation_id.y;
+    var pixel_y=local_pixel_y+gpu_work_state.start_row;
+    if pixel_x>=raytrace_config.image_width || local_pixel_y>=gpu_work_state.chunk_height {
         return;
     }
 
@@ -24,6 +25,6 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
         sum_colour+=result_colour;
     }
     let ans=sum_colour/f32(raytrace_config.aa_samples);
-    output_image[pixel_y*raytrace_config.image_width+pixel_x]=ans;
+    output_image[local_pixel_y*raytrace_config.image_width+pixel_x]=ans;
 }
 

@@ -3,6 +3,7 @@ import package::utils::Rgb;
 
 struct GpuWorkState {
     start_row: u32,
+    chunk_height:u32
 }
 const BVH_NODE_EMPTY=0u;
 const BVH_NODE_LEAF=1u;

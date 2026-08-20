@@ -264,6 +264,7 @@ impl From<RgbImageGpu> for RgbImage {
 #[derive(ShaderType)]
 pub struct GpuWorkState {
     pub start_row: u32,
+    pub chunk_height: u32,
 }
 #[derive(ShaderType, Default)]
 pub struct AabbGpu {

@@ -2,6 +2,7 @@ use std::sync::mpsc::channel;
 
 use encase::{ShaderType, StorageBuffer, UniformBuffer};
 use image::{RgbImage, imageops};
+use log::info;
 use wesl::include_wesl;
 use wgpu::util::DeviceExt;
 
@@ -62,7 +63,10 @@ impl GpuRaytracer {
         });
         let mut gpu_work_state_uniform = UniformBuffer::new(Vec::new());
         gpu_work_state_uniform
-            .write(&GpuWorkState { start_row: 0 })
+            .write(&GpuWorkState {
+                start_row: 0,
+                chunk_height: 0,
+            })
             .unwrap();
         let gpu_work_state_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("gpu work state"),
@@ -156,24 +160,25 @@ impl GpuRaytracer {
         }
     }
     pub fn render(&self) -> RgbImage {
-        let chunk_height = Self::recommended_chunk_height(self.adapter.limits(), self.image_width);
-        let mut remaining_rows = self.image_height;
+        let chunk_height = Self::recommended_chunk_height(self.adapter.limits(), self.image_width)
+            .min(self.image_height);
+        info!("Using chunk height {chunk_height}");
+        let mut row_start = 0;
         let mut ans = RgbImage::new(self.image_width, self.image_height);
-        while remaining_rows > 0 {
-            let row_cnt = chunk_height.min(remaining_rows);
-            let row_start = chunk_height - remaining_rows;
+        while row_start < self.image_height {
+            let row_cnt = chunk_height.min(self.image_height - row_start);
             let chunk_res = pollster::block_on(self.render_image_chunk(
                 row_start,
-                row_start + row_cnt - 1,
+                row_start + row_cnt,
                 0,
                 self.image_width,
             ));
             imageops::replace(&mut ans, &chunk_res, 0, row_start as i64);
-            remaining_rows -= row_cnt;
+            row_start += row_cnt;
         }
         ans
     }
-    /// inclusive bounds
+    /// [start_r,end_r)
     async fn render_image_chunk(
         &self,
         start_r: u32,
@@ -195,7 +200,10 @@ impl GpuRaytracer {
         }
         let mut gpu_work_state_uniform = UniformBuffer::new(Vec::new());
         gpu_work_state_uniform
-            .write(&GpuWorkState { start_row: start_r })
+            .write(&GpuWorkState {
+                start_row: start_r,
+                chunk_height: height,
+            })
             .unwrap();
         self.queue.write_buffer(
             &self.gpu_work_state_buffer,
