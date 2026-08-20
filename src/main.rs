@@ -1,6 +1,6 @@
 use clap::Parser;
 use image::{DynamicImage, RgbImage};
-use indicatif::{HumanDuration, MultiProgress};
+use indicatif::MultiProgress;
 use indicatif_log_bridge::LogWrapper;
 use log::info;
 use raytracer::{
@@ -26,8 +26,8 @@ fn main() {
 
     save_output(cli.output, img);
     info!(
-        "Done in {}, total rays: {}",
-        HumanDuration(progress_bar.elapsed()),
+        "Done in {}s, total rays: {}",
+        progress_bar.elapsed().as_secs(),
         stats.total_rays
     );
 }

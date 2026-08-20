@@ -81,8 +81,8 @@ pub fn load_cornell_box() -> Scene {
     Scene {
         objects,
         raytrace_config: RaytraceConfig {
-            aa_samples: 10000,
-            max_depth: 50,
+            aa_samples: 10_000,
+            max_depth: 8,
             sky_colour: Rgb::BLACK,
             image_width: 800,
             image_height: 800,

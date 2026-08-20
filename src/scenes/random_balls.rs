@@ -27,7 +27,7 @@ pub fn load_random_balls() -> Scene {
             let material: Material = if material_rand < 0.1 {
                 Glass::new(1.5).into()
             } else if material_rand < 0.4 {
-                Metal::new(Rgb::random(), rng.random_range(0.0..1.0)).into()
+                Metal::new(Rgb::random(), rng.random_range(0.0..0.3)).into()
             } else {
                 Diffuse::new(Rgb::random()).into()
             };
@@ -60,8 +60,8 @@ pub fn load_random_balls() -> Scene {
     Scene {
         objects,
         raytrace_config: RaytraceConfig {
-            aa_samples: 10000,
-            max_depth: 50,
+            aa_samples: 5_000,
+            max_depth: 16,
             sky_colour: Rgb::new(0.53, 0.81, 0.92),
             image_width: 800,
             image_height: 450,
