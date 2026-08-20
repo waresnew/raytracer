@@ -27,17 +27,6 @@ impl CpuRaytracer {
             bvh,
         }
     }
-    fn linear_to_srgb(rgb: Rgb) -> Rgb {
-        //approximation
-        fn sqrt_or_zero(x: f32) -> f32 {
-            if x < 0.0 { 0.0 } else { x.sqrt() }
-        }
-        Rgb {
-            r: sqrt_or_zero(rgb.r),
-            g: sqrt_or_zero(rgb.g),
-            b: sqrt_or_zero(rgb.b),
-        }
-    }
     pub fn render(&self, progress_bar: &ProgressBar) -> RgbImage {
         let mut image = RgbImage::new(self.config.image_width, self.config.image_height);
         for y in 0..self.config.image_height {
@@ -45,7 +34,7 @@ impl CpuRaytracer {
                 image.put_pixel(
                     x,
                     y,
-                    Self::linear_to_srgb(self.calc_pixel_colour(Vec2::new(x as f32, y as f32)))
+                    self.calc_pixel_colour(Vec2::new(x as f32, y as f32))
                         .into_raw(),
                 )
             }

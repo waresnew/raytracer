@@ -1,5 +1,5 @@
 use glam::Vec2;
-use image::RgbImage;
+use image::{ConvertColorOptions, RgbImage, metadata::Cicp};
 use indicatif::ProgressBar;
 
 use crate::{
@@ -34,12 +34,17 @@ impl RaytracerFacade {
         }
     }
     pub fn render(self, progress_bar: &ProgressBar) -> RgbImage {
-        if let Some(cpu) = self.cpu {
+        let mut image = if let Some(cpu) = self.cpu {
             cpu.render(progress_bar)
         } else if let Some(gpu) = self.gpu {
             gpu.render()
         } else {
             unreachable!("neither cpu nor gpu were initialized");
-        }
+        };
+        image.set_color_space(Cicp::SRGB_LINEAR).unwrap();
+        image
+            .apply_color_space(Cicp::SRGB, ConvertColorOptions::default())
+            .unwrap();
+        image
     }
 }
