@@ -4,7 +4,7 @@ struct Rng {
     state:u32
 }
 var<private> rng:Rng;
-// xorshift algo
+
 fn init_rng(pixel_x:u32,pixel_y:u32,sample_i:u32) {
     let seed=pixel_x+pixel_y*raytrace_config.image_width+sample_i*raytrace_config.image_width*raytrace_config.image_height;
     rng.state=seed;

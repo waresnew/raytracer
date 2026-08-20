@@ -5,13 +5,14 @@ This program simulates realistic lighting through raytracing. For each ray that 
 Both a CPU (Rust) and GPU (WESL) implementation are provided.
 
 ## GPU implementation notes
-- The shaders are written in WESL, which is a superset of WGSL that has nice features like file splitting and namespacing. However, the lack of IDE tooling for WESL made it very easy to make syntax mistakes.
-- To run BVH queries on the GPU, the tree is converted to a 1D array and a fixed-size stack is used to simulate recursion.
-- The CPU implementation uses enums (tagged unions) to statically dispatch to the correct solid and material. WGSL does not have tagged unions, so structs with shared fields are used to emulate this.
+
+- The shaders are written in WESL, which is a superset of WGSL that has nice features like file splitting and namespaces. However, the lack of IDE tooling for WESL made it very easy to make syntax mistakes.
+- To run BVH queries on the GPU, the tree is converted to a 1D array, and a stack is used to simulate recursion.
+- The CPU implementation uses enums (tagged unions) extensively. WGSL does not have tagged unions, so structs with shared fields are used to emulate this.
 
 ## Usage
 
-```
+```text
 Usage: raytracer [OPTIONS]
 
 Options:
@@ -39,8 +40,6 @@ Runtimes were measured on an M4 Macbook Air and the GPU implementation was used.
 
 ### Cornell Box
 
-Standard Cornell box.
-
 <table>
   <tr>
     <td>Image resolution</td>
@@ -62,13 +61,17 @@ Standard Cornell box.
     <td>Execution time</td>
     <td>2m 52s</td>
   </tr>
+  <tr>
+    <td>Preview</td>
+    <td>
+      <img src="https://github.com/waresnew/raytracer/releases/download/examples/cornell-box.png">
+      <br>
+      Standard Cornell box.
+    </td>
+  </tr>
 </table>
 
-![](https://github.com/waresnew/raytracer/releases/download/examples/cornell-box.png)
-
 ### Random Balls
-
-403 spheres with diffuse, metal, and glass materials.
 
 <table>
   <tr>
@@ -89,15 +92,19 @@ Standard Cornell box.
   </tr>
   <tr>
     <td>Execution time</td>
-    <td>94s</td>
+    <td>1m 34s</td>
+  </tr>
+  <tr>
+    <td>Preview</td>
+    <td>
+      <img src="https://github.com/waresnew/raytracer/releases/download/examples/random-balls.png">
+      <br>
+      403 spheres with diffuse, metal, and glass materials.
+    </td>
   </tr>
 </table>
 
-![](https://github.com/waresnew/raytracer/releases/download/examples/random-balls.png)
-
 ### Mixed Light
-
-Basic arrangement of red, green, and blue light sources to demonstrate colour mixing.
 
 <table>
   <tr>
@@ -118,8 +125,14 @@ Basic arrangement of red, green, and blue light sources to demonstrate colour mi
   </tr>
   <tr>
     <td>Execution time</td>
-    <td>88s</td>
+    <td>1m 28s</td>
+  </tr>
+  <tr>
+    <td>Preview</td>
+    <td>
+      <img src="https://github.com/waresnew/raytracer/releases/download/examples/mixed-light.png">
+      <br>
+      Basic arrangement of red, green, and blue light sources to demonstrate colour mixing.
+    </td>
   </tr>
 </table>
-
-![](https://github.com/waresnew/raytracer/releases/download/examples/mixed-light.png)
