@@ -41,7 +41,7 @@ pub fn load_mixed_light() -> Scene {
     Scene {
         objects,
         raytrace_config: RaytraceConfig {
-            aa_samples: 100,
+            aa_samples: 100_000,
             max_depth: 50,
             sky_colour: Rgb::BLACK,
             image_width: 800,

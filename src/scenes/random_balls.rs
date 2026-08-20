@@ -60,7 +60,7 @@ pub fn load_random_balls() -> Scene {
     Scene {
         objects,
         raytrace_config: RaytraceConfig {
-            aa_samples: 100,
+            aa_samples: 10000,
             max_depth: 50,
             sky_colour: Rgb::new(0.53, 0.81, 0.92),
             image_width: 800,
