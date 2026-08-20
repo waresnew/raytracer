@@ -106,3 +106,12 @@ impl Mul for Rgb {
         }
     }
 }
+impl From<Vec3> for Rgb {
+    fn from(value: Vec3) -> Self {
+        Self {
+            r: value.x,
+            g: value.y,
+            b: value.z,
+        }
+    }
+}

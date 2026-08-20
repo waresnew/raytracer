@@ -9,7 +9,7 @@ use crate::{
     bvh::BvhNode,
     camera::{Camera, CameraConfig},
     cpu_raytracer::RaytraceConfig,
-    hittable::Hittable,
+    hittable::{Hit, Hittable},
     material::Material,
     rgb::Rgb,
 };
@@ -30,6 +30,7 @@ impl From<&BvhNode> for Vec<BvhNodeGpu> {
     fn from(value: &BvhNode) -> Self {
         /// returns the index of cur in ans
         fn dfs_bvh(cur: &BvhNode, ans: &mut Vec<BvhNodeGpu>) -> u32 {
+            let index = ans.len();
             match cur {
                 BvhNode::Empty => {
                     ans.push(BvhNodeGpu {
@@ -40,12 +41,12 @@ impl From<&BvhNode> for Vec<BvhNodeGpu> {
                 BvhNode::Leaf(hittable) => {
                     ans.push(BvhNodeGpu {
                         tag: cur.into(),
+                        aabb: hittable.aabb().into(),
                         hittable: (*hittable).into(),
                         ..Default::default()
                     });
                 }
                 BvhNode::Branch(bvh_branch) => {
-                    let index = ans.len();
                     ans.push(BvhNodeGpu {
                         tag: cur.into(),
                         right_index: 0,
@@ -57,7 +58,7 @@ impl From<&BvhNode> for Vec<BvhNodeGpu> {
                     ans[index].right_index = right_index;
                 }
             }
-            (ans.len() - 1) as u32
+            index as u32
         }
         let mut ans = Vec::new();
         dfs_bvh(value, &mut ans);
@@ -81,49 +82,21 @@ pub struct HittableGpu {
 #[derive(ShaderType, Default)]
 pub struct MaterialGpu {
     tag: u32,
-    colour: RgbGpu,
+    colour: Vec3,
     reflect_fuzz_or_refraction_index: f32, //metal or glass
 }
 
-#[derive(ShaderType, Default)]
-pub struct RgbGpu {
-    r: f32,
-    g: f32,
-    b: f32,
-    _padding: f32, //bc i still want to treat Rgb as vec3f in wgsl (convenience)
-}
-
-impl From<Rgb> for RgbGpu {
-    fn from(value: Rgb) -> Self {
-        Self {
-            r: value.r,
-            g: value.g,
-            b: value.b,
-            _padding: 0.0,
-        }
-    }
-}
-
-impl From<RgbGpu> for Rgb {
-    fn from(value: RgbGpu) -> Self {
-        Self {
-            r: value.r,
-            g: value.g,
-            b: value.b,
-        }
-    }
-}
 impl From<Material> for MaterialGpu {
     fn from(value: Material) -> Self {
         match value {
             Material::Diffuse(diffuse) => Self {
                 tag: value.into(),
-                colour: diffuse.colour.into(),
+                colour: Vec3::new(diffuse.colour.r, diffuse.colour.g, diffuse.colour.b),
                 ..Default::default()
             },
             Material::Metal(metal) => Self {
                 tag: value.into(),
-                colour: metal.colour.into(),
+                colour: Vec3::new(metal.colour.r, metal.colour.g, metal.colour.b),
                 reflect_fuzz_or_refraction_index: metal.reflect_fuzz,
             },
             Material::Glass(glass) => Self {
@@ -133,7 +106,11 @@ impl From<Material> for MaterialGpu {
             },
             Material::DiffuseLight(diffuse_light) => Self {
                 tag: value.into(),
-                colour: diffuse_light.colour.into(),
+                colour: Vec3::new(
+                    diffuse_light.colour.r,
+                    diffuse_light.colour.g,
+                    diffuse_light.colour.b,
+                ),
                 ..Default::default()
             },
         }
@@ -183,7 +160,7 @@ pub struct RaytraceConfigGpu {
     pub image_width: u32,
     pub aa_samples: u32,
     pub max_depth: u32,
-    pub sky_colour: RgbGpu,
+    pub sky_colour: Vec3,
 }
 impl From<CameraConfig> for CameraConfigGpu {
     fn from(
@@ -217,7 +194,7 @@ impl From<RaytraceConfig> for RaytraceConfigGpu {
             image_width,
             aa_samples,
             max_depth,
-            sky_colour: sky_colour.into(),
+            sky_colour: Vec3::new(sky_colour.r, sky_colour.g, sky_colour.b),
         }
     }
 }
@@ -243,7 +220,7 @@ impl From<Camera> for CameraGpu {
 pub struct RgbImageGpu {
     pub height: u32,
     pub width: u32,
-    pub buffer: Vec<RgbGpu>,
+    pub buffer: Vec<Vec3>,
 }
 impl From<RgbImageGpu> for RgbImage {
     fn from(value: RgbImageGpu) -> Self {

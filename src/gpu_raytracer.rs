@@ -1,6 +1,7 @@
 use std::sync::mpsc::channel;
 
 use encase::{ShaderType, StorageBuffer, UniformBuffer};
+use glam::Vec3;
 use image::{RgbImage, imageops};
 use log::info;
 use wesl::include_wesl;
@@ -10,9 +11,7 @@ use crate::{
     bvh::BvhNode,
     camera::Camera,
     cpu_raytracer::RaytraceConfig,
-    gpu_raytracer::structs::{
-        BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbGpu, RgbImageGpu,
-    },
+    gpu_raytracer::structs::{BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbImageGpu},
 };
 
 mod structs;
@@ -101,9 +100,7 @@ impl GpuRaytracer {
             Self::recommended_chunk_height(adapter.limits(), raytrace_config.image_width);
         let output_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("output"),
-            size: raytrace_config.image_width as u64
-                * chunk_height as u64
-                * RgbGpu::min_size().get(),
+            size: raytrace_config.image_width as u64 * chunk_height as u64 * Vec3::min_size().get(),
             usage: wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::STORAGE,
             mapped_at_creation: false,
         });
@@ -224,7 +221,7 @@ impl GpuRaytracer {
 
         let bytes = rx.recv().unwrap();
         let output_storage = StorageBuffer::new(bytes);
-        let mut output_image_buffer: Vec<RgbGpu> = Vec::new();
+        let mut output_image_buffer: Vec<Vec3> = Vec::new();
         output_storage.read(&mut output_image_buffer).unwrap();
         let output_image = RgbImageGpu {
             height,
@@ -239,6 +236,6 @@ impl GpuRaytracer {
             .max_storage_buffer_binding_size
             .min(limits.max_buffer_size)
             .min(u32::MAX as u64) as u32;
-        (max_size / image_width / RgbGpu::min_size().get() as u32).max(1)
+        (max_size / image_width / Vec3::min_size().get() as u32).max(1)
     }
 }

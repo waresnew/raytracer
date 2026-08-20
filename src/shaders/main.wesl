@@ -27,4 +27,3 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
     let ans=sum_colour/f32(raytrace_config.aa_samples);
     output_image[local_pixel_y*raytrace_config.image_width+pixel_x]=ans;
 }
-

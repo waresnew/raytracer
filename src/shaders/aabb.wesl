@@ -15,5 +15,5 @@ fn ray_intersects_aabb(aabb:Aabb, ray: Ray, t_min:f32, t_max:f32) -> bool {
     let z_t_max=max(z_t1,z_t2);
     let t_interval_min = max(max(x_t_min,y_t_min),z_t_min);
     let t_interval_max = min(min(x_t_max,y_t_max),z_t_max);
-    return t_min <= t_max && t_interval_max >= t_min && t_interval_min <= t_max;
+    return t_interval_min <= t_interval_max && t_interval_max >= t_min && t_interval_min <= t_max;
 }

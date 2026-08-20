@@ -19,7 +19,7 @@ fn ray_hit(ray:Ray, t_min:f32, t_max:f32)->HitResult {
             case BVH_NODE_EMPTY { }
             case BVH_NODE_LEAF {
                 let hit_result=dispatch_ray_hittable(cur.hittable, ray, t_min,t_max);
-                if !ans.valid || hit_result.t<ans.t {
+                if hit_result.valid && (!ans.valid || hit_result.t<ans.t) {
                     ans=hit_result;
                 }
             }

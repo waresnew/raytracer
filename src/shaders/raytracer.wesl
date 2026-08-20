@@ -3,22 +3,21 @@ import package::buffers::raytrace_config;
 import package::material::dispatch::{dispatch_scatter_material, dispatch_emit_light};
 import package::bvh;
 import package::utils::F32_INFINITY;
-fn ray_cast(ray:Ray)->Rgb {
-    var cur=ray;
+fn ray_cast(orig_ray:Ray)->Rgb {
+    var ray=orig_ray;
     var depth=0u;
-    var attenuation_acc=Rgb(1.0,1.0,1.0);
     while (depth<raytrace_config.max_depth) {
         // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
         let hit_result=bvh::ray_hit(ray,0.001, F32_INFINITY);
         if !hit_result.valid {
-            return attenuation_acc*raytrace_config.sky_colour;
+            return ray.attenuation*raytrace_config.sky_colour;
         }
         let scatter_result=dispatch_scatter_material(hit_result.material, hit_result);
         if scatter_result.valid {
-            cur=scatter_result;
+            ray=scatter_result;
             depth+=1;
         } else {
-            return attenuation_acc * dispatch_emit_light(hit_result.material);
+            return ray.attenuation * dispatch_emit_light(hit_result.material);
         }
     }
     if depth==raytrace_config.max_depth {

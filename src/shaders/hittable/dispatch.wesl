@@ -2,7 +2,7 @@ import package::structs::{Hittable, HITTABLE_SPHERE, HITTABLE_PARALLELOGRAM, Mat
 import package::hittable::sphere;
 import package::raytracer::Ray;
 import package::hittable::parallelogram;
-import package::utils::Rgb;
+import package::utils::{Rgb,F32_INFINITY};
 struct HitResult {
     valid:bool,
 
@@ -16,7 +16,7 @@ struct HitResult {
     back_face: bool,
 }
 fn invalid_hit_result()->HitResult {
-    return HitResult(false,vec3f(0.0), vec3f(0.0),Material(0,Rgb(0.0), 0.0), 0.0, Ray(false,vec3f(0.0),vec3f(0.0), Rgb(0.0)), false);
+    return HitResult(false,vec3f(0.0), vec3f(0.0),Material(0,Rgb(0.0), 0.0), F32_INFINITY, Ray(false,vec3f(0.0),vec3f(0.0), Rgb(0.0)), false);
 }
 fn dispatch_ray_hittable(hittable:Hittable,ray:Ray, t_min:f32, t_max:f32)->HitResult {
     switch hittable.tag {
