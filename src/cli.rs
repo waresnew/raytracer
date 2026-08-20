@@ -11,6 +11,10 @@ pub struct Cli {
     #[arg(short, long)]
     pub output: Option<String>,
 
+    /// Use the CPU for raytracing instead of the GPU.
+    #[arg(short, long, default_value_t = false)]
+    pub cpu: bool,
+
     /// Which scene to render.
     #[arg(short,long,value_enum, default_value_t=SceneType::CornellBox)]
     pub scene: SceneType,

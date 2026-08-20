@@ -8,12 +8,15 @@ use wgpu::util::DeviceExt;
 use crate::{
     bvh::BvhNode,
     camera::Camera,
-    gpu::structs::{BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbGpu, RgbImageGpu},
-    raytracer::RaytraceConfig,
+    cpu_raytracer::RaytraceConfig,
+    gpu_raytracer::structs::{
+        BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbGpu, RgbImageGpu,
+    },
 };
 
 mod structs;
-pub struct Gpu {
+#[allow(dead_code)]
+pub struct GpuRaytracer {
     instance: wgpu::Instance,
     adapter: wgpu::Adapter,
     device: wgpu::Device,
@@ -30,15 +33,11 @@ pub struct Gpu {
     image_height: u32,
 }
 const ENTRY_POINT: &str = "main";
-impl Gpu {
-    pub fn with_scene(camera: Camera, bvh: &BvhNode, raytrace_config: RaytraceConfig) -> Self {
-        pollster::block_on(Self::with_scene_async(camera, bvh, raytrace_config))
+impl GpuRaytracer {
+    pub fn new(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
+        pollster::block_on(Self::new_async(camera, bvh, raytrace_config))
     }
-    async fn with_scene_async(
-        camera: Camera,
-        bvh: &BvhNode,
-        raytrace_config: RaytraceConfig,
-    ) -> Self {
+    async fn new_async(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
         let instance = wgpu::Instance::default();
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions::default())
@@ -87,7 +86,7 @@ impl Gpu {
             usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::UNIFORM,
         });
         let mut bvh_storage = StorageBuffer::new(Vec::new());
-        let bvh_gpu: Vec<BvhNodeGpu> = bvh.into();
+        let bvh_gpu: Vec<BvhNodeGpu> = (&bvh).into();
         bvh_storage.write(&bvh_gpu).unwrap();
         let bvh_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("bvh"),

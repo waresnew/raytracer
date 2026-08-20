@@ -1,8 +1,9 @@
 mod aabb;
 mod bvh;
 mod camera;
+mod cpu_raytracer;
 mod ext;
-mod gpu;
+mod gpu_raytracer;
 mod hittable;
 mod macros;
 mod material;

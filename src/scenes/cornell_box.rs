@@ -2,9 +2,9 @@ use glam::Vec3;
 
 use crate::{
     camera::CameraConfig,
+    cpu_raytracer::RaytraceConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
     material::{diffuse::Diffuse, diffuse_light::DiffuseLight},
-    raytracer::RaytraceConfig,
     rgb::Rgb,
     scenes::{Scene, make_box},
 };

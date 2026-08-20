@@ -4,7 +4,7 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use log::info;
 use raytracer::{
-    raytracer::Raytracer,
+    raytracer::RaytracerFacade,
     scenes::{self},
 };
 use viuer::Config;
@@ -18,7 +18,7 @@ fn main() {
     let (multi, progress_bar) = setup_progress_bar(scene.raytrace_config.image_height as u64);
     setup_logging(&cli, &multi);
 
-    let raytracer = Raytracer::new(scene);
+    let raytracer = RaytracerFacade::new(cli.cpu, scene);
     let img = raytracer.render(&progress_bar);
     progress_bar.finish_and_clear();
 
