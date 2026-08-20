@@ -64,6 +64,8 @@ Standard Cornell box.
   </tr>
 </table>
 
+![](https://github.com/waresnew/raytracer/releases/download/examples/cornell-box.png)
+
 ### Random Balls
 
 403 spheres with diffuse, metal, and glass materials.
@@ -90,6 +92,8 @@ Standard Cornell box.
     <td>94s</td>
   </tr>
 </table>
+
+![](https://github.com/waresnew/raytracer/releases/download/examples/random-balls.png)
 
 ### Mixed Light
 
@@ -118,3 +122,4 @@ Basic arrangement of red, green, and blue light sources to demonstrate colour mi
   </tr>
 </table>
 
+![](https://github.com/waresnew/raytracer/releases/download/examples/mixed-light.png)
