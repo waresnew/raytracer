@@ -10,7 +10,7 @@ fn ray_hit_parallelogram(parallelogram:Hittable, ray:Ray, t_min:f32, t_max:f32)-
     if abs(denom) < EPSILON {
         return invalid_hit_result(); // no/inf intersection
     }
-    let t = dot(-n, ray.point) + dot(n,start) / denom;
+    let t = (dot(-n, ray.point) + dot(n,start)) / denom;
     let point = ray_at(ray, t);
     if t>=t_min && t<=t_max && point_in_parallelogram(point, parallelogram) {
         return HitResult (
