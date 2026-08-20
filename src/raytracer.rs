@@ -1,6 +1,6 @@
 use glam::Vec2;
 use image::{ConvertColorOptions, RgbImage, metadata::Cicp};
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::{
     bvh::BvhNode, camera::Camera, cpu_raytracer::CpuRaytracer, gpu_raytracer::GpuRaytracer,
@@ -10,9 +10,10 @@ use crate::{
 pub struct RaytracerFacade {
     cpu: Option<CpuRaytracer>,
     gpu: Option<GpuRaytracer>,
+    progress_bar: ProgressBar,
 }
 impl RaytracerFacade {
-    pub fn new(cpu: bool, scene: Scene) -> Self {
+    pub fn new(cpu: bool, scene: Scene, chunk_height: Option<u32>) -> Self {
         let camera = Camera::new(
             Vec2::new(
                 scene.raytrace_config.image_width as f32,
@@ -20,24 +21,37 @@ impl RaytracerFacade {
             ),
             scene.camera_config,
         );
+        let progress_bar = ProgressBar::new(scene.raytrace_config.image_height as u64).with_style(
+            ProgressStyle::with_template(
+                "\t[{elapsed_precise}] {wide_bar:.green/red} {pos:>7}/{len:7} ETA: {eta}\t",
+            )
+            .unwrap(),
+        );
         let bvh = BvhNode::from_objects(scene.objects);
         if cpu {
             Self {
                 cpu: Some(CpuRaytracer::new(camera, bvh, scene.raytrace_config)),
                 gpu: None,
+                progress_bar: progress_bar.clone(),
             }
         } else {
             Self {
                 cpu: None,
-                gpu: Some(GpuRaytracer::new(camera, bvh, scene.raytrace_config)),
+                gpu: Some(GpuRaytracer::new(
+                    camera,
+                    bvh,
+                    scene.raytrace_config,
+                    chunk_height,
+                )),
+                progress_bar: progress_bar.clone(),
             }
         }
     }
-    pub fn render(self, progress_bar: &ProgressBar) -> RgbImage {
+    pub fn render(self) -> RgbImage {
         let mut image = if let Some(cpu) = self.cpu {
-            cpu.render(progress_bar)
+            cpu.render(&self.progress_bar)
         } else if let Some(gpu) = self.gpu {
-            gpu.render()
+            gpu.render(&self.progress_bar)
         } else {
             unreachable!("neither cpu nor gpu were initialized");
         };
@@ -46,5 +60,8 @@ impl RaytracerFacade {
             .apply_color_space(Cicp::SRGB, ConvertColorOptions::default())
             .unwrap();
         image
+    }
+    pub fn progress_bar(&self) -> &ProgressBar {
+        &self.progress_bar
     }
 }

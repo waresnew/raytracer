@@ -3,6 +3,7 @@ use std::sync::mpsc::channel;
 use encase::{ShaderType, StorageBuffer, UniformBuffer};
 use glam::Vec3;
 use image::{RgbImage, imageops};
+use indicatif::ProgressBar;
 use log::info;
 use wesl::include_wesl;
 use wgpu::util::DeviceExt;
@@ -31,13 +32,24 @@ pub struct GpuRaytracer {
     bind_group: wgpu::BindGroup,
     image_width: u32,
     image_height: u32,
+    chunk_height: Option<u32>,
 }
 const ENTRY_POINT: &str = "main";
 impl GpuRaytracer {
-    pub fn new(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
-        pollster::block_on(Self::new_async(camera, bvh, raytrace_config))
+    pub fn new(
+        camera: Camera,
+        bvh: BvhNode,
+        raytrace_config: RaytraceConfig,
+        chunk_height: Option<u32>,
+    ) -> Self {
+        pollster::block_on(Self::new_async(camera, bvh, raytrace_config, chunk_height))
     }
-    async fn new_async(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
+    async fn new_async(
+        camera: Camera,
+        bvh: BvhNode,
+        raytrace_config: RaytraceConfig,
+        chunk_height: Option<u32>,
+    ) -> Self {
         let instance = wgpu::Instance::default();
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions::default())
@@ -96,11 +108,12 @@ impl GpuRaytracer {
             contents: bvh_storage.as_ref(),
             usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::STORAGE,
         });
-        let chunk_height =
-            Self::recommended_chunk_height(adapter.limits(), raytrace_config.image_width);
         let output_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("output"),
-            size: raytrace_config.image_width as u64 * chunk_height as u64 * Vec3::min_size().get(),
+            size: raytrace_config.image_width as u64
+                * Self::recommended_chunk_height(adapter.limits(), raytrace_config.image_width)
+                    as u64
+                * Vec3::min_size().get(),
             usage: wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::STORAGE,
             mapped_at_creation: false,
         });
@@ -154,15 +167,16 @@ impl GpuRaytracer {
             bind_group,
             image_width: raytrace_config.image_width,
             image_height: raytrace_config.image_height,
+            chunk_height,
         }
     }
-    pub fn render(&self) -> RgbImage {
-        let chunk_height = Self::recommended_chunk_height(self.adapter.limits(), self.image_width)
-            .min(self.image_height);
+    pub fn render(&self, progress_bar: &ProgressBar) -> RgbImage {
+        let chunk_height = self.chunk_height().min(self.image_height);
         info!("Using chunk height {chunk_height}");
         let mut row_start = 0;
         let mut ans = RgbImage::new(self.image_width, self.image_height);
         while row_start < self.image_height {
+            info!("Dispatching chunk starting from {row_start}");
             let row_cnt = chunk_height.min(self.image_height - row_start);
             let chunk_res = pollster::block_on(self.render_image_chunk(
                 row_start,
@@ -171,6 +185,7 @@ impl GpuRaytracer {
                 self.image_width,
             ));
             imageops::replace(&mut ans, &chunk_res, 0, row_start as i64);
+            progress_bar.inc(row_cnt as u64);
             row_start += row_cnt;
         }
         ans
@@ -230,7 +245,13 @@ impl GpuRaytracer {
         };
         output_image.into()
     }
-    //TODO: add cli arg to configure chunk height
+    fn chunk_height(&self) -> u32 {
+        if let Some(chunk_height) = self.chunk_height {
+            chunk_height
+        } else {
+            Self::recommended_chunk_height(self.adapter.limits(), self.image_width)
+        }
+    }
     fn recommended_chunk_height(limits: wgpu::Limits, image_width: u32) -> u32 {
         let max_size = limits
             .max_storage_buffer_binding_size

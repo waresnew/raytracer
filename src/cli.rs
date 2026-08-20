@@ -19,6 +19,12 @@ pub struct Cli {
     #[arg(short,long,value_enum, default_value_t=SceneType::CornellBox)]
     pub scene: SceneType,
 
+    /// When GPU mode is used, each dispatch will process image_width*(this parameter) pixels.
+    /// Reduce this to avoid your computer freezing at the cost of slower runtimes. If this parameter is not set, then the program
+    /// will process as many pixels as a storage buffer can hold for each dispatch.
+    #[arg(long)]
+    pub gpu_chunk_height: Option<u32>,
+
     #[command(flatten)]
     pub verbosity: Verbosity<WarnLevel>,
 
