@@ -16,6 +16,7 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
 
     var sum_colour=Rgb(0.0,0.0,0.0);
     for (var i=0u;i<raytrace_config.aa_samples;i++) {
+        rng::init_rng(pixel_x, pixel_y, i);
         let sample_point=vec2f(rng::rand_range(f32(pixel_x)-0.5, f32(pixel_x)+0.5), rng::rand_range(f32(pixel_y)-0.5, f32(pixel_y)+0.5));
         let world_point=camera::screen_to_viewport(sample_point);
         let lens_point=camera::rand_lens_point();
