@@ -1,8 +1,8 @@
 use crate::{
     camera::CameraConfig,
-    cpu_raytracer::RaytraceConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
     material::Material,
+    raytracer::RaytraceConfig,
     scenes::{
         cornell_box::load_cornell_box, mixed_light::load_mixed_light,
         random_balls::load_random_balls,

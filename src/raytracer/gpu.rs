@@ -11,8 +11,10 @@ use wgpu::util::DeviceExt;
 use crate::{
     bvh::BvhNode,
     camera::Camera,
-    cpu_raytracer::RaytraceConfig,
-    gpu_raytracer::structs::{BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbImageGpu},
+    raytracer::RaytraceConfig,
+    raytracer::gpu::structs::{
+        BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbImageGpu,
+    },
 };
 
 mod structs;

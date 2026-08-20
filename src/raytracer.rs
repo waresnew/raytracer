@@ -3,10 +3,20 @@ use image::{ConvertColorOptions, RgbImage, metadata::Cicp};
 use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::{
-    bvh::BvhNode, camera::Camera, cpu_raytracer::CpuRaytracer, gpu_raytracer::GpuRaytracer,
-    scenes::Scene,
+    bvh::BvhNode, camera::Camera, raytracer::cpu::CpuRaytracer, raytracer::gpu::GpuRaytracer,
+    rgb::Rgb, scenes::Scene,
 };
+mod cpu;
+mod gpu;
 
+#[derive(Debug, Clone, Copy)]
+pub struct RaytraceConfig {
+    pub image_height: u32,
+    pub image_width: u32,
+    pub aa_samples: u32,
+    pub max_depth: u32,
+    pub sky_colour: Rgb,
+}
 pub struct RaytracerFacade {
     cpu: Option<CpuRaytracer>,
     gpu: Option<GpuRaytracer>,

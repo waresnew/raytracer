@@ -3,9 +3,9 @@ use rand::{RngExt, SeedableRng, rngs::SmallRng};
 
 use crate::{
     camera::CameraConfig,
-    cpu_raytracer::RaytraceConfig,
     hittable::{Hittable, parallelogram::Parallelogram, sphere::Sphere},
     material::{Material, diffuse::Diffuse, glass::Glass, metal::Metal},
+    raytracer::RaytraceConfig,
     rgb::Rgb,
     scenes::Scene,
 };

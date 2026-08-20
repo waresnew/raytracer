@@ -8,9 +8,9 @@ use crate::{
     aabb::Aabb,
     bvh::BvhNode,
     camera::{Camera, CameraConfig},
-    cpu_raytracer::RaytraceConfig,
     hittable::{Hit, Hittable},
     material::Material,
+    raytracer::RaytraceConfig,
     rgb::Rgb,
 };
 

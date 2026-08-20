@@ -4,20 +4,14 @@ use glam::Vec2;
 use image::RgbImage;
 use indicatif::ProgressBar;
 
-use crate::{bvh::BvhNode, camera::Camera, material::Scatter, ray::Ray, rgb::Rgb};
+use crate::{
+    bvh::BvhNode, camera::Camera, material::Scatter, ray::Ray, raytracer::RaytraceConfig, rgb::Rgb,
+};
 
 pub struct CpuRaytracer {
     config: RaytraceConfig,
     camera: Camera,
     bvh: BvhNode,
-}
-#[derive(Debug, Clone, Copy)]
-pub struct RaytraceConfig {
-    pub image_height: u32,
-    pub image_width: u32,
-    pub aa_samples: u32,
-    pub max_depth: u32,
-    pub sky_colour: Rgb,
 }
 impl CpuRaytracer {
     pub fn new(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
