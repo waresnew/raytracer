@@ -9,14 +9,14 @@ struct HitResult {
     //valid
     point: vec3f,
     /// convention: always points against ray_dir
-    normal: vec3,
+    normal: vec3f,
     material: Material,
     t: f32,
     ray: Ray,
     back_face: bool,
 }
-fn invalid_hit_result() {
-    return HitResult(false,vec3f(0.0), vec3f(0.0),Material(0,Rgb(0.0), 0.0), 0.0, Ray(false,vec3f(0.0),vec3f(0.0)), false);
+fn invalid_hit_result()->HitResult {
+    return HitResult(false,vec3f(0.0), vec3f(0.0),Material(0,Rgb(0.0), 0.0), 0.0, Ray(false,vec3f(0.0),vec3f(0.0), Rgb(0.0)), false);
 }
 fn dispatch_ray_hittable(hittable:Hittable,ray:Ray, t_min:f32, t_max:f32)->HitResult {
     switch hittable.tag {
@@ -28,6 +28,7 @@ fn dispatch_ray_hittable(hittable:Hittable,ray:Ray, t_min:f32, t_max:f32)->HitRe
         }
         default {
             //unreachable
+            return invalid_hit_result();
         }
     }
 }

@@ -1,9 +1,8 @@
-import package::raytracer::Ray;
 import package::hittable::dispatch::HitResult;
 import package::structs::Material;
 import package::rng;
-import package::utils::EPSILON;
+import package::utils::{EPSILON,Rgb};
 /// assume hit_result is valid
-fn emit_diffuse_light(material:Material, hit_result:HitResult)->Ray {
-    return mnaterial.colour;
+fn emit_diffuse_light(material:Material)->Rgb {
+    return material.colour;
 }

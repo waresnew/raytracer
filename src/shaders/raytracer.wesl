@@ -1,11 +1,11 @@
 import package::utils::Rgb;
 import package::buffers::raytrace_config;
-import package::material::dispatch::dispatch_scatter_material;
+import package::material::dispatch::{dispatch_scatter_material, dispatch_emit_light};
 import package::bvh;
 import package::utils::F32_INFINITY;
 fn ray_cast(ray:Ray)->Rgb {
     var cur=ray;
-    let depth=0;
+    var depth=0u;
     var attenuation_acc=Rgb(1.0,1.0,1.0);
     while (depth<raytrace_config.max_depth) {
         // min=0.001 to avoid shadow acne (eg. a reflected ray may start 0.00001 inside an object bc float imprecision - want to ignore those)
@@ -24,6 +24,8 @@ fn ray_cast(ray:Ray)->Rgb {
     if depth==raytrace_config.max_depth {
         return Rgb(0.0,0.0,0.0);
     }
+    //wgsl can't infer that this is unreachable
+    return Rgb(0.0,0.0,0.0);
 }
 fn ray_at(ray:Ray, t:f32)->vec3f {
     return ray.point+t*ray.dir;
@@ -37,3 +39,6 @@ struct Ray {
     attenuation:Rgb
 }
 
+fn invalid_ray() ->Ray {
+    return Ray(false,vec3f(0.0),vec3f(0.0),Rgb(0.0));
+}

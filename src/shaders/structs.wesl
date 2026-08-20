@@ -9,6 +9,7 @@ const BVH_NODE_LEAF=1u;
 const BVH_NODE_BRANCH=2u;
 struct BvhNode{
     tag: u32,
+    aabb:Aabb,
 
     //leaf
     hittable: Hittable,

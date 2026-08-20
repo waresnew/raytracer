@@ -21,4 +21,5 @@ fn cosine_weighted_vector(normal: vec3f) ->vec3f {
             return rand_unit;
         }
     }
+    return vec3f(0.0); //wgsl can't infer that this is unreachable
 }

@@ -30,7 +30,8 @@ fn ray_hit_parallelogram(parallelogram:Hittable, ray:Ray, t_min:f32, t_max:f32)-
 fn point_in_parallelogram(point: vec3f, region: Hittable) -> bool {
     // to check if the point is in the face's bounds, represent the point using side1 and
     // side2 as basis vectors. the basis does not (should not) need to be orthogonal and normalized.
-    let d = point - region.start;
+    let start=region.centre_or_start;
+    let d = point - start;
     let n = plane_normal(region);
     let s = dot(n,cross(region.side2,d)) / dot(n,cross(region.side2,region.side1));
     let t = dot(n,cross(region.side1,d)) / dot(n,cross(region.side1,region.side2));

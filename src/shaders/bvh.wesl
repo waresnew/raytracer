@@ -6,7 +6,7 @@ import package::raytracer::Ray;
 
 const MAX_STACK_SIZE=64;
 fn ray_hit(ray:Ray, t_min:f32, t_max:f32)->HitResult {
-    var stack:array<BvhNode,MAX_STACK_SIZE>;   
+    var stack:array<u32,MAX_STACK_SIZE>;   
     var sp=0u; //stack pointer points to first unused index
     stack[sp]=0;
     sp+=1;

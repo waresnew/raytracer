@@ -1,5 +1,5 @@
 import package::structs::{Material, MATERIAL_DIFFUSE, MATERIAL_METAL, MATERIAL_GLASS, MATERIAL_DIFFUSE_LIGHT};
-import package::raytracer::Ray;
+import package::raytracer::{Ray,invalid_ray};
 import package::hittable::dispatch::{HitResult, invalid_hit_result};
 import package::utils::Rgb;
 import package::material::diffuse::scatter_diffuse;
@@ -19,7 +19,11 @@ fn dispatch_scatter_material(material:Material, hit_result:HitResult)->Ray {
             return scatter_glass(material, hit_result);
         }
         case MATERIAL_DIFFUSE_LIGHT {
-            return invalid_hit_result();
+            return invalid_ray();
+        }
+        default {
+            //unreachable
+            return invalid_ray();
         }
     }
 }
