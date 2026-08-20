@@ -66,3 +66,6 @@ struct Aabb {
     min:vec3f,
     max:vec3f
 }
+struct RaytraceStats {
+    total_rays: u32,
+}

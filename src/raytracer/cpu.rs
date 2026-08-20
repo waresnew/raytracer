@@ -5,13 +5,19 @@ use image::RgbImage;
 use indicatif::ProgressBar;
 
 use crate::{
-    bvh::BvhNode, camera::Camera, material::Scatter, ray::Ray, raytracer::RaytraceConfig, rgb::Rgb,
+    bvh::BvhNode,
+    camera::Camera,
+    material::Scatter,
+    ray::Ray,
+    raytracer::{RaytraceConfig, RaytraceStats},
+    rgb::Rgb,
 };
 
 pub struct CpuRaytracer {
     config: RaytraceConfig,
     camera: Camera,
     bvh: BvhNode,
+    stats: RaytraceStats,
 }
 impl CpuRaytracer {
     pub fn new(camera: Camera, bvh: BvhNode, raytrace_config: RaytraceConfig) -> Self {
@@ -19,9 +25,10 @@ impl CpuRaytracer {
             camera,
             config: raytrace_config,
             bvh,
+            stats: RaytraceStats::default(),
         }
     }
-    pub fn render(&self, progress_bar: &ProgressBar) -> RgbImage {
+    pub fn render(&mut self, progress_bar: &ProgressBar) -> (RgbImage, RaytraceStats) {
         let mut image = RgbImage::new(self.config.image_width, self.config.image_height);
         for y in 0..self.config.image_height {
             for x in 0..self.config.image_width {
@@ -34,9 +41,9 @@ impl CpuRaytracer {
             }
             progress_bar.inc(1);
         }
-        image
+        (image, self.stats)
     }
-    fn calc_pixel_colour(&self, point: Vec2) -> Rgb {
+    fn calc_pixel_colour(&mut self, point: Vec2) -> Rgb {
         let sample_points: Vec<Vec2> = iter::repeat_with(|| {
             Vec2::new(
                 rand::random_range(point.x - 0.5..=point.x + 0.5),
@@ -59,7 +66,8 @@ impl CpuRaytracer {
         sum_colour / self.config.aa_samples as f32
     }
 
-    fn ray_cast(&self, ray: Ray, depth: u32) -> Rgb {
+    fn ray_cast(&mut self, ray: Ray, depth: u32) -> Rgb {
+        self.stats.total_rays += 1;
         if depth == 0 {
             return Rgb::BLACK;
         }

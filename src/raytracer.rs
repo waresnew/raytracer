@@ -17,6 +17,10 @@ pub struct RaytraceConfig {
     pub max_depth: u32,
     pub sky_colour: Rgb,
 }
+#[derive(Debug, Clone, Copy, Default)]
+pub struct RaytraceStats {
+    pub total_rays: u64,
+}
 pub struct RaytracerFacade {
     cpu: Option<CpuRaytracer>,
     gpu: Option<GpuRaytracer>,
@@ -57,8 +61,8 @@ impl RaytracerFacade {
             }
         }
     }
-    pub fn render(self) -> RgbImage {
-        let mut image = if let Some(cpu) = self.cpu {
+    pub fn render(self) -> (RgbImage, RaytraceStats) {
+        let (mut image, stats) = if let Some(mut cpu) = self.cpu {
             cpu.render(&self.progress_bar)
         } else if let Some(gpu) = self.gpu {
             gpu.render(&self.progress_bar)
@@ -69,7 +73,7 @@ impl RaytracerFacade {
         image
             .apply_color_space(Cicp::SRGB, ConvertColorOptions::default())
             .unwrap();
-        image
+        (image, stats)
     }
     pub fn progress_bar(&self) -> &ProgressBar {
         &self.progress_bar

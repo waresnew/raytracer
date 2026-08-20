@@ -10,7 +10,7 @@ use crate::{
     camera::{Camera, CameraConfig},
     hittable::{Hit, Hittable},
     material::Material,
-    raytracer::RaytraceConfig,
+    raytracer::{RaytraceConfig, RaytraceStats},
     rgb::Rgb,
 };
 
@@ -254,5 +254,18 @@ impl From<Aabb> for AabbGpu {
             min: value.min,
             max: value.max,
         }
+    }
+}
+#[derive(ShaderType, Default)]
+pub struct RaytraceStatsGpu {
+    pub total_rays: u32,
+}
+impl From<Vec<RaytraceStatsGpu>> for RaytraceStats {
+    fn from(value: Vec<RaytraceStatsGpu>) -> Self {
+        let mut total_rays: u64 = 0;
+        for v in &value {
+            total_rays += v.total_rays as u64;
+        }
+        Self { total_rays }
     }
 }

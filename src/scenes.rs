@@ -10,6 +10,7 @@ use crate::{
 };
 use clap::ValueEnum;
 use glam::Vec3;
+use log::warn;
 
 mod cornell_box;
 mod mixed_light;
@@ -28,12 +29,20 @@ pub struct Scene {
     pub camera_config: CameraConfig,
 }
 
-pub fn load_scene(scene: SceneType) -> Scene {
-    match scene {
+pub fn load_scene(scene_type: SceneType) -> Scene {
+    let scene = match scene_type {
         SceneType::CornellBox => load_cornell_box(),
         SceneType::RandomBalls => load_random_balls(),
         SceneType::MixedLight => load_mixed_light(),
+    };
+    if scene.raytrace_config.max_depth as u64 * scene.raytrace_config.aa_samples as u64
+        > u32::MAX as u64
+    {
+        warn!(
+            "this scene's max_depth*aa_samples is greater than u32::MAX. this can lead to overflows (incorrect stats) when counting total rays in the gpu impl."
+        );
     }
+    scene
 }
 /// yaw in degrees, +ve means ccw
 pub(super) fn make_box(material: Material, centre: Vec3, yaw: f32, scale: Vec3) -> [Hittable; 6] {

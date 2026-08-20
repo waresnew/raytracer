@@ -21,11 +21,15 @@ fn main() {
     let progress_bar = raytracer.progress_bar().clone();
     multi.add(progress_bar.clone());
     setup_logging(&cli, &multi);
-    let img = raytracer.render();
+    let (img, stats) = raytracer.render();
     progress_bar.finish_and_clear();
 
     save_output(cli.output, img);
-    info!("Done in {}", HumanDuration(progress_bar.elapsed()));
+    info!(
+        "Done in {}, total rays: {}",
+        HumanDuration(progress_bar.elapsed()),
+        stats.total_rays
+    );
 }
 
 fn setup_logging(cli: &Cli, multi: &MultiProgress) {

@@ -11,9 +11,11 @@ use wgpu::util::DeviceExt;
 use crate::{
     bvh::BvhNode,
     camera::Camera,
-    raytracer::RaytraceConfig,
-    raytracer::gpu::structs::{
-        BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RgbImageGpu,
+    raytracer::{
+        RaytraceConfig, RaytraceStats,
+        gpu::structs::{
+            BvhNodeGpu, CameraGpu, GpuWorkState, RaytraceConfigGpu, RaytraceStatsGpu, RgbImageGpu,
+        },
     },
 };
 
@@ -31,6 +33,7 @@ pub struct GpuRaytracer {
     camera_buffer: wgpu::Buffer,
     bvh_buffer: wgpu::Buffer,
     output_buffer: wgpu::Buffer,
+    stats_buffer: wgpu::Buffer, // per pixel
     bind_group: wgpu::BindGroup,
     image_width: u32,
     image_height: u32,
@@ -110,13 +113,21 @@ impl GpuRaytracer {
             contents: bvh_storage.as_ref(),
             usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::STORAGE,
         });
+        let max_output_buffer_len = raytrace_config.image_width as u64
+            * Self::recommended_chunk_height(adapter.limits(), raytrace_config.image_width) as u64;
+
         let output_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("output"),
-            size: raytrace_config.image_width as u64
-                * Self::recommended_chunk_height(adapter.limits(), raytrace_config.image_width)
-                    as u64
-                * Vec3::min_size().get(),
+            size: max_output_buffer_len * Vec3::min_size().get(),
             usage: wgpu::BufferUsages::COPY_SRC | wgpu::BufferUsages::STORAGE,
+            mapped_at_creation: false,
+        });
+        let stats_buffer = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("stats"),
+            size: max_output_buffer_len * RaytraceStatsGpu::min_size().get(),
+            usage: wgpu::BufferUsages::COPY_SRC
+                | wgpu::BufferUsages::STORAGE
+                | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
         let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
@@ -151,6 +162,10 @@ impl GpuRaytracer {
                     binding: 4,
                     resource: output_buffer.as_entire_binding(),
                 },
+                wgpu::BindGroupEntry {
+                    binding: 5,
+                    resource: stats_buffer.as_entire_binding(),
+                },
             ],
         });
 
@@ -166,31 +181,34 @@ impl GpuRaytracer {
             camera_buffer,
             bvh_buffer,
             output_buffer,
+            stats_buffer,
             bind_group,
             image_width: raytrace_config.image_width,
             image_height: raytrace_config.image_height,
             chunk_height,
         }
     }
-    pub fn render(&self, progress_bar: &ProgressBar) -> RgbImage {
+    pub fn render(&self, progress_bar: &ProgressBar) -> (RgbImage, RaytraceStats) {
         let chunk_height = self.chunk_height().min(self.image_height);
         info!("Using chunk height {chunk_height}");
         let mut row_start = 0;
         let mut ans = RgbImage::new(self.image_width, self.image_height);
+        let mut ans_stats = RaytraceStats::default();
         while row_start < self.image_height {
             info!("Dispatching chunk starting from {row_start}");
             let row_cnt = chunk_height.min(self.image_height - row_start);
-            let chunk_res = pollster::block_on(self.render_image_chunk(
+            let (img_chunk, chunk_stats) = pollster::block_on(self.render_image_chunk(
                 row_start,
                 row_start + row_cnt,
                 0,
                 self.image_width,
             ));
-            imageops::replace(&mut ans, &chunk_res, 0, row_start as i64);
+            ans_stats.total_rays += chunk_stats.total_rays; // delta-based to avoid u32 overflow
+            imageops::replace(&mut ans, &img_chunk, 0, row_start as i64);
             progress_bar.inc(row_cnt as u64);
             row_start += row_cnt;
         }
-        ans
+        (ans, ans_stats)
     }
     /// [start_r,end_r)
     async fn render_image_chunk(
@@ -199,7 +217,7 @@ impl GpuRaytracer {
         end_r: u32,
         start_c: u32,
         end_c: u32,
-    ) -> RgbImage {
+    ) -> (RgbImage, RaytraceStats) {
         let height = end_r - start_r;
         let width = end_c - start_c;
         let mut encoder = self.device.create_command_encoder(&Default::default());
@@ -224,20 +242,15 @@ impl GpuRaytracer {
             0,
             gpu_work_state_uniform.as_ref(),
         );
-        self.queue.submit(Some(encoder.finish()));
-        let (tx, rx) = channel();
-        wgpu::util::DownloadBuffer::read_buffer(
-            &self.device,
-            &self.queue,
-            &self.output_buffer.slice(..),
-            move |result| tx.send(result.unwrap().to_vec()).unwrap(),
-        );
-        self.device
-            .poll(wgpu::PollType::wait_indefinitely())
+        let mut stats_storage = StorageBuffer::new(Vec::new());
+        stats_storage
+            .write(&vec![RaytraceStatsGpu::default()])
             .unwrap();
-
-        let bytes = rx.recv().unwrap();
-        let output_storage = StorageBuffer::new(bytes);
+        self.queue
+            .write_buffer(&self.stats_buffer, 0, stats_storage.as_ref());
+        self.queue.submit(Some(encoder.finish()));
+        let img_bytes = self.download_buffer(&self.output_buffer);
+        let output_storage = StorageBuffer::new(img_bytes);
         let mut output_image_buffer: Vec<Vec3> = Vec::new();
         output_storage.read(&mut output_image_buffer).unwrap();
         let output_image = RgbImageGpu {
@@ -245,7 +258,26 @@ impl GpuRaytracer {
             width,
             buffer: output_image_buffer,
         };
-        output_image.into()
+
+        let stats_bytes = self.download_buffer(&self.stats_buffer);
+        let stats_storage = StorageBuffer::new(stats_bytes);
+        let mut stats: Vec<RaytraceStatsGpu> = Vec::new();
+        stats_storage.read(&mut stats).unwrap();
+        (output_image.into(), stats.into())
+    }
+    fn download_buffer(&self, buffer: &wgpu::Buffer) -> Vec<u8> {
+        let (tx, rx) = channel();
+        wgpu::util::DownloadBuffer::read_buffer(
+            &self.device,
+            &self.queue,
+            &buffer.slice(..),
+            move |result| tx.send(result.unwrap().to_vec()).unwrap(),
+        );
+        self.device
+            .poll(wgpu::PollType::wait_indefinitely())
+            .unwrap();
+
+        rx.recv().unwrap()
     }
     fn chunk_height(&self) -> u32 {
         if let Some(chunk_height) = self.chunk_height {
