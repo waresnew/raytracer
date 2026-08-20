@@ -90,6 +90,7 @@ pub struct RgbGpu {
     r: f32,
     g: f32,
     b: f32,
+    _padding: f32, //bc i still want to treat Rgb as vec3f in wgsl (convenience)
 }
 
 impl From<Rgb> for RgbGpu {
@@ -98,6 +99,7 @@ impl From<Rgb> for RgbGpu {
             r: value.r,
             g: value.g,
             b: value.b,
+            _padding: 0.0,
         }
     }
 }

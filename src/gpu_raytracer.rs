@@ -231,6 +231,6 @@ impl GpuRaytracer {
             .max_storage_buffer_binding_size
             .min(limits.max_buffer_size)
             .min(u32::MAX as u64) as u32;
-        (max_size / image_width).max(1)
+        (max_size / image_width / RgbGpu::min_size().get() as u32).max(1)
     }
 }
