@@ -27,7 +27,7 @@ impl Rgb {
             b: vec3.z,
         }
     }
-    pub fn new(r: f32, g: f32, b: f32) -> Self {
+    pub const fn new(r: f32, g: f32, b: f32) -> Self {
         Self { r, g, b }
     }
     pub fn into_raw(self) -> image::Rgb<u8> {

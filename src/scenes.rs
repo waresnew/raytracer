@@ -1,11 +1,12 @@
 use crate::{
     camera::CameraConfig,
     hittable::{Hittable, parallelogram::Parallelogram},
-    material::Material,
+    material::{Material, diffuse::Diffuse, diffuse_light::DiffuseLight},
     raytracer::RaytraceConfig,
+    rgb::Rgb,
     scenes::{
-        cornell_box::load_cornell_box, mixed_light::load_mixed_light,
-        random_balls::load_random_balls,
+        cornell_box::load_cornell_box, cornell_box_glass::load_cornell_box_glass,
+        mixed_light::load_mixed_light, random_balls::load_random_balls,
     },
 };
 use clap::ValueEnum;
@@ -13,12 +14,14 @@ use glam::Vec3;
 use log::warn;
 
 mod cornell_box;
+mod cornell_box_glass;
 mod mixed_light;
 mod random_balls;
 #[derive(Default, Debug, Clone, Copy, ValueEnum)]
 pub enum SceneType {
     #[default]
     CornellBox,
+    CornellBoxGlass,
     RandomBalls,
     MixedLight,
 }
@@ -32,6 +35,7 @@ pub struct Scene {
 pub fn load_scene(scene_type: SceneType) -> Scene {
     let scene = match scene_type {
         SceneType::CornellBox => load_cornell_box(),
+        SceneType::CornellBoxGlass => load_cornell_box_glass(),
         SceneType::RandomBalls => load_random_balls(),
         SceneType::MixedLight => load_mixed_light(),
     };
@@ -98,4 +102,66 @@ pub(super) fn make_box(material: Material, centre: Vec3, yaw: f32, scale: Vec3) 
     base.map(|(start, side1, side2)| {
         Hittable::Parallelogram(Parallelogram::new(start, side1, side2, material))
     })
+}
+/// remember: there's no face behind camera
+pub fn make_cornell_box(light_colour: Rgb) -> (Vec<Hittable>, CameraConfig) {
+    // 100x100x100 volume
+    let left_wall = Parallelogram::new(
+        Vec3::new(-50.0, 0.0, 0.0),
+        Vec3::new(0.0, 100.0, 0.0),
+        Vec3::new(0.0, 0.0, -100.0),
+        Diffuse::new(Rgb::new(1.0, 0.0, 0.0)).into(),
+    )
+    .into();
+    let right_wall = Parallelogram::new(
+        Vec3::new(50.0, 0.0, 0.0),
+        Vec3::new(0.0, 100.0, 0.0),
+        Vec3::new(0.0, 0.0, -100.0),
+        Diffuse::new(Rgb::new(0.0, 1.0, 0.0)).into(),
+    )
+    .into();
+    let floor = Parallelogram::new(
+        Vec3::new(-50.0, 0.0, 0.0),
+        Vec3::new(100.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -100.0),
+        Diffuse::new(Rgb::WHITE).into(),
+    )
+    .into();
+    let ceiling = Parallelogram::new(
+        Vec3::new(-50.0, 100.0, 0.0),
+        Vec3::new(100.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -100.0),
+        Diffuse::new(Rgb::WHITE).into(),
+    )
+    .into();
+    let back_wall = Parallelogram::new(
+        Vec3::new(-50.0, 0.0, -100.0),
+        Vec3::new(100.0, 0.0, 0.0),
+        Vec3::new(0.0, 100.0, 0.0),
+        Diffuse::new(Rgb::WHITE).into(),
+    )
+    .into();
+    let light_source = Parallelogram::new(
+        Vec3::new(-25.0, 99.9, -35.0),
+        Vec3::new(50.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -30.0),
+        DiffuseLight::new(light_colour).into(),
+    )
+    .into();
+    (
+        vec![
+            left_wall,
+            right_wall,
+            floor,
+            ceiling,
+            back_wall,
+            light_source,
+        ],
+        CameraConfig {
+            centre: Vec3::new(0.0, 50.0, 137.4), // 50/tan(40/2)
+            look_at_centre: Vec3::new(0.0, 50.0, -50.0),
+            vertical_fov: 40.0,
+            lens_radius: 0.0,
+        },
+    )
 }

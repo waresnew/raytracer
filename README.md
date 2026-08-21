@@ -21,7 +21,7 @@ Options:
   -c, --cpu
           Use the CPU for raytracing instead of the GPU
   -s, --scene <SCENE>
-          Which scene to render [default: cornell-box] [possible values: cornell-box, random-balls, mixed-light]
+          Which scene to render [default: cornell-box] [possible values: cornell-box, cornell-box-glass, random-balls, mixed-light]
       --gpu-chunk-height <GPU_CHUNK_HEIGHT>
           When GPU mode is used, each dispatch will process image_width*(this parameter) pixels. Reduce this to avoid your computer freezing at the cost of slower runtimes. If this parameter is not set, then the program will process as many pixels as a storage buffer can hold for each dispatch
   -v, --verbose...
@@ -71,6 +71,39 @@ Runtimes were measured on an M4 Macbook Air and the GPU implementation was used.
   </tr>
 </table>
 
+### Cornell Box Glass
+
+<table>
+  <tr>
+    <td>Image resolution</td>
+    <td>800x800</td>
+  </tr>
+  <tr>
+    <td>Samples per pixel</td>
+    <td>10,000</td>
+  </tr>
+  <tr>
+    <td>Max depth</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td>Total rays</td>
+    <td>31,341,678,660</td>
+  </tr>
+  <tr>
+    <td>Execution time</td>
+    <td>2m 31s</td>
+  </tr>
+  <tr>
+    <td>Preview</td>
+    <td>
+      <img src="https://github.com/waresnew/raytracer/releases/download/examples/cornell-box-glass.png">
+      <br>
+      Cornell box but the cube is replaced with a glass sphere and the light is slightly tinted.
+    </td>
+  </tr>
+</table>
+
 ### Random Balls
 
 <table>
@@ -88,11 +121,11 @@ Runtimes were measured on an M4 Macbook Air and the GPU implementation was used.
   </tr>
   <tr>
     <td>Total rays</td>
-    <td>5,120,073,596</td>
+    <td>5,374,862,952</td>
   </tr>
   <tr>
     <td>Execution time</td>
-    <td>1m 34s</td>
+    <td>1m 45s</td>
   </tr>
   <tr>
     <td>Preview</td>
