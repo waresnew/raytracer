@@ -13,7 +13,14 @@ fn ray_hit_sphere(sphere:Hittable, ray:Ray, t_min:f32, t_max:f32)->HitResult {
     if discrim < 0.0 {
         return invalid_hit_result();
     }
-    let t = (-b - sqrt(discrim)) / (2.0 * a);
+    let t_small = (-b - sqrt(discrim)) / (2.0 * a);
+    let t_large = (-b + sqrt(discrim)) / (2.0 * a);
+    var t=t_small;
+    // test both t's and pick the smallest valid one. need to test t_large as well since
+    // in the case of a refracted ray inside the sphere, t_small will be <0
+    if t<t_min || t>t_max {
+        t=t_large;
+    }
     if t<t_min || t>t_max {
         return invalid_hit_result();
     }

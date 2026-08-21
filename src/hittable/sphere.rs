@@ -28,10 +28,20 @@ impl Sphere {
         if discrim < 0.0 {
             return None;
         }
-        let t = (-b - discrim.sqrt()) / (2.0 * a);
-        if !t_bounds.contains(&t) {
-            return None;
-        }
+        let t = {
+            let t_small = (-b - discrim.sqrt()) / (2.0 * a);
+            let t_large = (-b + discrim.sqrt()) / (2.0 * a);
+            // test both t's and pick the smallest valid one. need to test t_large as well since
+            // in the case of a refracted ray inside the sphere, t_small will be <0
+            if t_bounds.contains(&t_small) {
+                Some(t_small)
+            } else if t_bounds.contains(&t_large) {
+                Some(t_large)
+            } else {
+                None
+            }
+        };
+        let t = t?;
         let hit_point = ray.at(t);
         let mut normal = (hit_point - self.centre).normalize();
         let mut back_face = false;
